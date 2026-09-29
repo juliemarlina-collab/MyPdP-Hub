@@ -5,7 +5,7 @@
  */
 var MyPdPDemoDB = (function () {
   'use strict';
-  var KEY = 'mypdp_demo_v1';
+  var KEY = 'mypdp_demo_v2';
 
   // Compact synchronous SHA-256 (hex) — same result as Apps Script's computeDigest.
   function sha256(ascii) {
@@ -50,7 +50,7 @@ var MyPdPDemoDB = (function () {
     if (!data) data = JSON.parse(JSON.stringify(seed.rows));
     Object.keys(seed.schema).forEach(function (t) { if (!data[t]) data[t] = []; });
     function save() { if (opts.persist === false) return; try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* storage blocked: keep in memory */ } }
-    var fixedNow = opts.now || null;
+    var fixedNow = opts.now || null, kv = {};
     return {
       all: function (t) { return (data[t] || []).map(function (r) { return Object.assign({}, r); }); },
       insert: function (t, obj) {
@@ -66,6 +66,8 @@ var MyPdPDemoDB = (function () {
       },
       saveFile: function (name) { return { url: '', id: 'demo-' + name }; }, // demo: file is not really stored
       now: function () { return fixedNow ? new Date(fixedNow) : new Date(); },
+      kvGet: function (k) { var x = kv[k]; return x && x.exp > Date.now() ? x.v : null; },
+      kvSet: function (k, v, ttl) { kv[k] = { v: v, exp: Date.now() + (ttl || 900) * 1000 }; },
       hash: sha256,
       randomCode: function (len) { var c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = ''; for (var i = 0; i < len; i++) s += c[Math.floor(Math.random() * c.length)]; return s; },
       reset: function () { data = JSON.parse(JSON.stringify(seed.rows)); save(); }

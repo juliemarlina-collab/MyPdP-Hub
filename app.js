@@ -78,8 +78,94 @@
     bulb: '<path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/>',
     pie: '<path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
     shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+    sigma: '<path d="M18 5H6l6 7-6 7h12"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+    leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10z"/><path d="M2 21c0-3 1.9-5.4 5.1-6"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
     spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>'
   };
+  // Text-free spot illustrations (so the BM/EN switch never leaves words inside an image)
+  var ILLU = {
+    qr: '<svg viewBox="0 0 220 150" class="illu" aria-hidden="true"><ellipse cx="110" cy="140" rx="80" ry="8" class="i-sh"/><rect x="118" y="20" width="62" height="110" rx="12" class="i-dark"/><rect x="124" y="30" width="50" height="86" rx="6" class="i-screen"/><rect x="132" y="48" width="34" height="34" rx="4" class="i-line"/><path d="M137 53h8v8h-8zM153 53h8v8h-8zM137 69h8v8h-8zM153 69h4v4h-4zM159 75h2v2h-2z" class="i-fill"/><path d="M128 92h42" class="i-lime-s"/><rect x="36" y="38" width="62" height="62" rx="10" class="i-card"/><path d="M46 48h14v14H46zM74 48h14v14H74zM46 76h14v14H46zM74 76h6v6h-6zM82 84h6v6h-6z" class="i-brand"/><path d="M100 69h14" class="i-dash"/><circle cx="178" cy="26" r="13" class="i-lime"/><path d="m172 26 4 4 8-8" class="i-ink-s"/></svg>',
+    claim: '<svg viewBox="0 0 220 150" class="illu" aria-hidden="true"><ellipse cx="110" cy="140" rx="80" ry="8" class="i-sh"/><rect x="58" y="16" width="86" height="112" rx="10" class="i-card"/><path d="M72 38h46M72 52h58M72 66h52M72 80h36" class="i-line"/><rect x="72" y="94" width="28" height="18" rx="4" class="i-soft"/><circle cx="148" cy="96" r="26" class="i-lime"/><path d="m136 96 8 8 16-16" class="i-ink-s"/><circle cx="54" cy="40" r="8" class="i-brand"/><circle cx="170" cy="30" r="5" class="i-sky"/></svg>',
+    consult: '<svg viewBox="0 0 220 150" class="illu" aria-hidden="true"><ellipse cx="110" cy="140" rx="86" ry="8" class="i-sh"/><circle cx="66" cy="56" r="18" class="i-skin"/><path d="M34 128c0-22 14-40 32-40s32 18 32 40z" class="i-brand"/><circle cx="154" cy="60" r="18" class="i-skin2"/><path d="M122 128c0-22 14-38 32-38s32 16 32 38z" class="i-dark"/><rect x="84" y="18" width="46" height="26" rx="10" class="i-lime"/><path d="M96 44l-6 8 12-8" class="i-lime"/><rect x="118" y="26" width="40" height="20" rx="9" class="i-card"/><path d="M92 31h30M126 36h24" class="i-ink-s thin"/><rect x="60" y="112" width="100" height="10" rx="5" class="i-soft"/></svg>',
+    tasks: '<svg viewBox="0 0 220 150" class="illu" aria-hidden="true"><ellipse cx="110" cy="140" rx="84" ry="8" class="i-sh"/><rect x="42" y="30" width="136" height="86" rx="10" class="i-dark"/><rect x="50" y="38" width="120" height="70" rx="5" class="i-screen"/><path d="M34 118h152l-10 12H44z" class="i-soft"/><rect x="62" y="50" width="10" height="10" rx="3" class="i-lime"/><rect x="62" y="68" width="10" height="10" rx="3" class="i-lime"/><rect x="62" y="86" width="10" height="10" rx="3" class="i-line"/><path d="M80 55h60M80 73h48M80 91h54" class="i-line"/><circle cx="166" cy="30" r="14" class="i-brand"/><path d="m160 30 4 4 8-8" class="i-w-s"/></svg>',
+    report: '<svg viewBox="0 0 220 150" class="illu" aria-hidden="true"><ellipse cx="110" cy="140" rx="84" ry="8" class="i-sh"/><rect x="40" y="18" width="140" height="110" rx="14" class="i-card"/><rect x="58" y="80" width="16" height="32" rx="5" class="i-sky"/><rect x="82" y="64" width="16" height="48" rx="5" class="i-brand"/><rect x="106" y="72" width="16" height="40" rx="5" class="i-sky"/><rect x="130" y="46" width="16" height="66" rx="5" class="i-brand"/><rect x="154" y="36" width="16" height="76" rx="5" class="i-lime"/><path d="M58 60l32-18 24 10 34-22 22-6" class="i-dash2"/></svg>'
+  };
+  // ---------- image slots: drop files into images/ and they appear; missing files fall back to the built-in design ----------
+  var IMG_DEFAULT = {
+    hero: 'images/hero.png', bannerLecturer: 'images/banner-lecturer.png', bannerStudent: 'images/banner-student.png',
+    coverBahasa: 'images/cover-bahasa.png', coverPengajianAm: 'images/cover-pengajian-am.png', coverMatSains: 'images/cover-matematik-sains.png', coverMekanikal: 'images/cover-mekanikal.png', coverAgro: 'images/cover-agroteknologi.png', coverOther: 'images/cover-other.png',
+    spotCheckin: 'images/spot-checkin.png', spotClaims: 'images/spot-claims.png', spotTasks: 'images/spot-tasks.png', spotConsult: 'images/spot-consult.png', spotReports: 'images/spot-reports.png'
+  };
+  var IMG = {};
+  Object.keys(IMG_DEFAULT).forEach(function (k) { var c = CFG.IMAGES || {}; IMG[k] = c[k] !== undefined ? c[k] : IMG_DEFAULT[k]; });
+  if (CFG.HERO_PHOTO) IMG.hero = CFG.HERO_PHOTO;               // older setting still works
+  if (CFG.USE_IMAGES === false) Object.keys(IMG).forEach(function (k) { IMG[k] = ''; });
+  /** <img> that stays hidden until it loads; until then (or if the file is missing) the fallback design shows */
+  function slot(key, fallback, cls) {
+    if (!IMG[key]) return fallback;
+    return '<span class="imgslot ' + (cls || '') + '"><img src="' + esc(IMG[key]) + '" alt="" decoding="async"><span class="fb">' + fallback + '</span></span>';
+  }
+  /** background photo for hero / banners: applied only after the file has loaded */
+  function bgAttr(key) { return IMG[key] ? ' data-bg="' + esc(IMG[key]) + '"' : ''; }
+  /** same file name in other common formats, so hero.png / hero.jpg / hero.webp all work */
+  function altNames(src) {
+    var m = String(src).match(/^(.*)\.(png|jpe?g|webp)$/i);
+    if (!m) return [src];
+    return [src].concat(['png', 'jpg', 'jpeg', 'webp'].filter(function (x) { return x !== m[2].toLowerCase(); }).map(function (x) { return m[1] + '.' + x; }));
+  }
+  function applyBackgrounds(root) {
+    (root || document).querySelectorAll('[data-bg]').forEach(function (el) {
+      var tries = altNames(el.getAttribute('data-bg')), i = 0;
+      (function next() {
+        if (i >= tries.length) return;                      // no file found: keep the built-in design
+        var src = tries[i++], im = new Image();
+        im.onload = function () { el.style.setProperty('--photo', 'url("' + src.replace(/"/g, '') + '")'); el.classList.add('has-photo'); };
+        im.onerror = next;
+        im.src = src;
+      })();
+    });
+  }
+  document.addEventListener('error', function (e) {
+    var im = e.target;
+    if (!im || im.tagName !== 'IMG' || !im.parentNode || !im.parentNode.classList || !im.parentNode.classList.contains('imgslot')) return;
+    if (im.dataset.alts === undefined) im.dataset.alts = altNames(im.getAttribute('src')).slice(1).join('|');
+    var list = im.dataset.alts ? im.dataset.alts.split('|') : [];
+    if (!list.length) return;                               // nothing left: fallback design stays
+    im.dataset.alts = list.slice(1).join('|');
+    im.src = list[0];
+  }, true);
+  document.addEventListener('load', function (e) {
+    var t0 = e.target;
+    if (t0 && t0.tagName === 'IMG' && t0.parentNode && t0.parentNode.classList && t0.parentNode.classList.contains('imgslot')) t0.parentNode.classList.add('ok');
+  }, true);
+  function illu(n) {
+    var key = { qr: 'spotCheckin', claim: 'spotClaims', tasks: 'spotTasks', consult: 'spotConsult', report: 'spotReports' }[n];
+    return key ? slot(key, ILLU[n] || '', 'spotimg') : (ILLU[n] || '');
+  }
+  // Course tiles follow the 5 fields (bidang). The field comes from the lecturer's programme/department in Users;
+  // if that is blank or unknown, the course-code prefix is used (edit BIDANG_BY_CODE in config.js to add prefixes).
+  var BIDANG = {
+    bahasa:      { cls: 'c-comm', icon: 'chat',  key: 'coverBahasa',      match: /bahasa|komunikasi|english|language/i },
+    pengajianam: { cls: 'c-ga',   icon: 'globe', key: 'coverPengajianAm', match: /pengajian am|general stud/i },
+    matsains:    { cls: 'c-math', icon: 'sigma', key: 'coverMatSains',    match: /matematik|sains|math|science/i },
+    mekanikal:   { cls: 'c-work', icon: 'gear',  key: 'coverMekanikal',   match: /mekanikal|mechanical|kejuruteraan|engineering/i },
+    agro:        { cls: 'c-food', icon: 'leaf',  key: 'coverAgro',        match: /agro|bio|makanan|food/i }
+  };
+  var BIDANG_ORDER = ['pengajianam', 'bahasa', 'matsains', 'agro', 'mekanikal'];   // 'Pengajian Am' checked before the generic words
+  var CODE_BIDANG = Object.assign({ DUE: 'bahasa', DUW: 'pengajianam', MPU: 'pengajianam', DUB: 'pengajianam', DUA: 'pengajianam', DBM: 'matsains', DBS: 'matsains', DJJ: 'mekanikal', DJF: 'mekanikal', DMT: 'agro', DAT: 'agro' }, CFG.BIDANG_BY_CODE || {});
+  function bidangOf(code, programme) {
+    for (var i = 0; i < BIDANG_ORDER.length; i++) { var b = BIDANG_ORDER[i]; if (programme && BIDANG[b].match.test(programme)) return b; }
+    return CODE_BIDANG[String(code).slice(0, 3).toUpperCase()] || '';
+  }
+  function cover(code, big, programme) {
+    var b = BIDANG[bidangOf(code, programme)];
+    var k = b ? [b.cls, b.icon] : ['c-gen', 'book'], key = b ? b.key : 'coverOther';
+    var img = IMG[key] ? '<span class="imgslot cvimg"><img src="' + esc(IMG[key]) + '" alt="" decoding="async"></span>' : '';
+    return '<div class="cover ' + k[0] + (big ? ' big' : '') + '" aria-hidden="true">' + img + '<span class="cv-ico">' + ic(k[1]) + '</span><span class="cv-code">' + esc(code) + '</span><i class="cv-ring"></i><i class="cv-ring r2"></i></div>';
+  }
   function ic(n) { return '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[n] || '') + '</svg>'; }
   function ring(pct, thr, label) {
     var r = 38, c = 2 * Math.PI * r, p = Math.max(0, Math.min(100, pct)), off = c * (1 - p / 100);
@@ -165,7 +251,7 @@
   window.addEventListener('hashchange', render);
 
   var NAV_S = [['dashboard', ic('home'), 'nDashboard'], ['checkin', ic('qr'), 'nCheckin'], ['attendance', ic('calendar'), 'nAttendance'], ['claims', ic('med'), 'nClaims'], ['tasks', ic('tasks'), 'nTasks'], ['marks', ic('chart'), 'nMarks'], ['consult', ic('chat'), 'nConsult'], ['notifications', ic('bell'), 'nNotif']];
-  var NAV_L = [['dashboard', ic('home'), 'nDashboard'], ['classes', ic('users'), 'nClasses'], ['attendance', ic('calendar'), 'nAttendanceL'], ['claims', ic('med'), 'nClaimsL'], ['tasks', ic('tasks'), 'nMarking'], ['consult', ic('chat'), 'nConsult'], ['reports', ic('report'), 'nReports'], ['notifications', ic('bell'), 'nNotif']];
+  var NAV_L = [['dashboard', ic('home'), 'nDashboard'], ['classes', ic('book'), 'myCourses'], ['attendance', ic('calendar'), 'nAttendanceL'], ['claims', ic('med'), 'nClaimsL'], ['tasks', ic('tasks'), 'nMarking'], ['consult', ic('chat'), 'nConsult'], ['reports', ic('report'), 'nReports'], ['notifications', ic('bell'), 'nNotif']];
 
   function langToggle() {
     return '<div class="lang" role="group" aria-label="' + esc(t('language')) + '">' +
@@ -196,11 +282,13 @@
 
   var renderSeq = 0;
   function render() {
+    stopHero();
     closeModal();
     document.documentElement.lang = lang;
     var r = route();
     if (r.name === 'checkin' && r.args[0] && !S.user) tset('mypdp_pending_checkin', r.args[0]);
-    if (!S.user || !S.token) { if (r.name !== 'login') { history.replaceState(null, '', '#/login'); } app.innerHTML = loginView(); animateIn(app); return; }
+    if (!S.user || !S.token) { if (r.name !== 'login') { history.replaceState(null, '', '#/login'); } app.innerHTML = loginView(); animateIn(app); applyBackgrounds(app); startHero(); return; }
+    if (S.user.must_change_pin) { app.innerHTML = pinSetupView(); return; }
     if (r.name === 'login' || !r.name) { history.replaceState(null, '', '#/dashboard'); r = route(); }
     var pending = tget('mypdp_pending_checkin');
     if (pending && !isLect()) { tset('mypdp_pending_checkin', null); history.replaceState(null, '', '#/checkin/' + pending); r = route(); }
@@ -209,43 +297,88 @@
     var activeName = pages[r.name] ? ({ 'class': 'classes', student: 'classes', session: 'attendance', task: 'tasks' }[r.name] || r.name) : 'dashboard';
     app.innerHTML = shell(activeName, '<div class="spinner">' + esc(t('loading')) + '</div>');
     var seq = ++renderSeq;
-    api('me').then(function (m) { S.unread = m.unread; S.settings = m.settings || S.settings; return page(r); })
-      .then(function (html) { if (seq !== renderSeq) return; app.innerHTML = shell(activeName, html); animateIn(document.getElementById('main')); var f = pageAfter; pageAfter = null; if (f) f(); window.scrollTo(0, 0); })
-      .catch(function (e) { if (seq !== renderSeq) return; var m = document.getElementById('main'); if (m) m.innerHTML = '<div class="alert alert-red">' + esc(msg(e) || String(e)) + '</div>'; });
+    api('me').then(function (m) {
+      S.unread = m.unread; S.settings = m.settings || S.settings;
+      if (m.user && m.user.must_change_pin) { S.user.must_change_pin = true; setSession(S.token, S.user); throw { code: 'pinchange' }; }
+      return page(r);
+    })
+      .then(function (html) { if (seq !== renderSeq) return; app.innerHTML = shell(activeName, html); animateIn(document.getElementById('main')); applyBackgrounds(app); var f = pageAfter; pageAfter = null; if (f) f(); window.scrollTo(0, 0); })
+      .catch(function (e) { if (seq !== renderSeq) return; if (e && e.code === 'pinchange') { S.user.must_change_pin = true; app.innerHTML = pinSetupView(); return; } var m = document.getElementById('main'); if (m) m.innerHTML = '<div class="alert alert-red">' + esc(msg(e) || String(e)) + '</div>'; });
   }
   var pageAfter = null; // optional callback after a page is painted
+
+
+  // ---------- landing hero: auto-flipping 3D card arc + parallax ----------
+  var heroTimer = null, heroMove = null;
+  function stopHero() { if (heroTimer) { clearInterval(heroTimer); heroTimer = null; } if (heroMove) { document.removeEventListener('mousemove', heroMove); heroMove = null; } }
+  function startHero() {
+    stopHero();
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.hcard'));
+    var arc = document.getElementById('hcarc');
+    if (!cards.length || !arc) return;
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var k = 0, paused = false;
+    arc.addEventListener('mouseenter', function () { paused = true; });
+    arc.addEventListener('mouseleave', function () { paused = false; });
+    heroTimer = setInterval(function () {
+      if (paused || document.hidden) return;
+      var c = cards[k % cards.length];
+      if (c.classList.contains('held')) { k += 1; return; }
+      c.classList.add('flipped');
+      setTimeout(function () { c.classList.remove('flipped'); }, 2600);
+      k += 1;
+    }, 1400);
+    heroMove = function (e) {
+      var x = e.clientX / window.innerWidth - 0.5, y = e.clientY / window.innerHeight - 0.5;
+      arc.style.setProperty('--tx', (x * 10).toFixed(2) + 'deg');
+      arc.style.setProperty('--ty', (-y * 6).toFixed(2) + 'deg');
+    };
+    document.addEventListener('mousemove', heroMove);
+  }
 
   // ---------- login ----------
   function loginView() {
     var ms = lang === 'ms';
     var demo = '';
     if (!LIVE) {
-      var users = demoDb.all('Users').filter(function (u) { return ['L001', 'L002', 'S003', 'S005', 'S007', 'S001'].indexOf(u.user_id) >= 0; });
+      var users = demoDb.all('Users').filter(function (u) { return ['L004', 'L002', 'L003', 'S003', 'S005', 'S051'].indexOf(u.user_id) >= 0; });
       demo = '<div class="card" style="margin-top:16px"><div class="eyebrow">' + esc(t('demoAccounts')) + ' · PIN 1234</div><p class="small muted" style="margin:6px 0 10px">' + esc(t('demoNote')) + '</p><div class="demo-users">' + users.map(function (u) {
         return '<button data-act="demologin" data-v="' + u.user_id + '"><span class="avatar">' + esc(initials(u.name)) + '</span><span><strong>' + esc(u.name) + '</strong><br><span class="muted small">' + esc(u.user_id) + ' · ' + esc(t(u.role)) + '</span></span></button>';
       }).join('') + '</div></div>';
     }
-    var fc = function (cls, ry, i, inner) { return '<div class="fcard ' + cls + '" style="--ry:' + ry + 'deg;--i:' + i + '">' + inner + '</div>'; };
-    var mini = function (arr) { return '<div class="mini">' + arr.map(function (h) { return '<i style="height:' + h + '%"></i>'; }).join('') + '</div>'; };
+    var bars = function (arr, cls) { return '<div class="hc-bars ' + (cls || '') + '">' + arr.map(function (h) { return '<i style="height:' + h + '%"></i>'; }).join('') + '</div>'; };
+    var spark = '<svg class="hc-spark" viewBox="0 0 120 50" aria-hidden="true"><path class="area" d="M0 42 L15 36 L30 38 L45 26 L60 30 L75 18 L90 22 L105 10 L120 14 L120 50 L0 50Z"/><path class="line" d="M0 42 L15 36 L30 38 L45 26 L60 30 L75 18 L90 22 L105 10 L120 14"/></svg>';
+    var flip = function (cls, front, backTitle, backText, icon) {
+      return '<button type="button" class="hcard ' + cls + '" data-act="flipcard" aria-label="' + esc(backTitle) + '"><span class="hc-in"><span class="hc-face hc-front">' + front + '</span>' +
+        '<span class="hc-face hc-back"><span class="hc-ico">' + ic(icon) + '</span><strong>' + esc(backTitle) + '</strong><span>' + esc(backText) + '</span></span></span></button>';
+    };
     var cards = [
-      fc('', 38, 0, (ms ? 'Kehadiran minggu ini' : 'Attendance this week') + '<div class="v">91%</div>' + mini([60, 72, 55, 88, 80, 95, 91])),
-      fc('dark', 26, 1, (ms ? 'Pelajar berisiko' : 'At-risk students') + '<div class="v">4</div><span style="color:#ff7382">● ' + (ms ? 'Perhatian Tinggi' : 'High Attention') + '</span>'),
-      fc('lime', 14, 2, 'MC · CL001<div class="v">' + (ms ? 'Lulus' : 'Approved') + '</div>' + (ms ? 'Kehadiran dikemas kini' : 'Attendance updated')),
-      fc('blue', 0, 3, (ms ? 'Kod daftar masuk' : 'Check-in code') + '<div class="v" style="letter-spacing:.12em">7K3QPA</div>' + (ms ? 'Sah 10 minit' : 'Valid 10 min')),
-      fc('', -14, 4, (ms ? 'Tugasan dihantar' : 'Tasks submitted') + '<div class="v">83%</div><span class="ok">+12%</span>'),
-      fc('dark', -26, 5, (ms ? 'Konsultasi' : 'Consultation') + '<div class="v">10:30</div>' + (ms ? 'Isn, 5 Okt · Disahkan' : 'Mon, 5 Oct · Confirmed')),
-      fc('lime', -38, 6, (ms ? 'Laporan PdP' : 'PdP report') + '<div class="v">CSV</div>' + (ms ? '1 klik' : '1 click'))
-    ].join('');
+      flip('w', '<span class="hc-k">' + (ms ? 'Kehadiran minggu ini' : 'Attendance this week') + '</span><span class="hc-v">94.6%</span>' + bars([62, 80, 55, 90, 75, 96, 88, 94]), ms ? 'Kehadiran automatik' : 'Automatic attendance', ms ? 'Peratus dikira terus daripada rekod sesi dan kod QR.' : 'Percentages come straight from session records and QR check-ins.', 'calendar'),
+      flip('w', '<span class="hc-k">' + (ms ? 'Tugasan Task 2' : 'Task 2 submissions') + '</span><span class="hc-row"><b>27</b> ' + (ms ? 'dihantar' : 'submitted') + '</span><span class="hc-row"><b class="warn">2</b> ' + (ms ? 'lewat' : 'late') + '</span><span class="hc-row"><b class="bad">1</b> ' + (ms ? 'tiada' : 'missing') + '</span>', ms ? 'Jejak tugasan' : 'Task tracking', ms ? 'Nampak siapa hantar, lewat atau belum hantar.' : 'See who submitted, who is late and who has not.', 'tasks'),
+      flip('photo', '<span class="hc-avatar">AH</span><span class="hc-chip"><span>' + (ms ? 'Kehadiran' : 'Attendance') + '</span><b>62.5%</b></span><span class="hc-chip lime"><span>' + (ms ? 'Tindakan' : 'Action') + '</span><b>' + (ms ? 'Konsultasi' : 'Consult') + '</b></span>', ms ? 'Garis masa pelajar' : 'Student timeline', ms ? 'Kehadiran, markah dan tindakan susulan bagi setiap pelajar.' : 'Attendance, marks and follow-ups for each student.', 'users'),
+      flip('w', '<span class="hc-k">' + (ms ? 'Prestasi kelas' : 'Class performance') + '</span><span class="hc-v sm">' + (ms ? 'Purata 74%' : 'Average 74%') + '</span>' + spark, ms ? 'Trend markah' : 'Mark trends', ms ? 'Kesan markah yang menurun lebih awal.' : 'Spot falling marks early.', 'chart'),
+      flip('dark center', '<span class="hc-k light">MyPdP Insight</span><span class="hc-big">' + (ms ? 'Amaran awal' : 'Early warning') + ' <i class="dotlime"></i> ' + (ms ? 'untuk setiap pelajar' : 'for every student') + '</span><span class="hc-tags"><em class="r">● ' + (ms ? 'Tinggi' : 'High') + '</em><em class="o">● ' + (ms ? 'Intervensi' : 'Intervene') + '</em><em class="g">● ' + (ms ? 'Landasan' : 'On track') + '</em></span>', ms ? '4 tahap risiko' : '4 risk levels', ms ? 'Dikira daripada kehadiran, tugasan tertunggak dan markah.' : 'Calculated from attendance, missing work and marks.', 'alert'),
+      flip('blue', '<span class="hc-plus">' + ic('qr') + '</span><span class="hc-v sm">' + (ms ? 'Daftar masuk QR' : 'QR check-in') + '</span><span class="hc-k light">7K3QPA · 10 min</span>', ms ? 'Imbas & hadir' : 'Scan & done', ms ? 'Pelajar imbas kod pensyarah; kehadiran direkod serta-merta.' : 'Students scan the lecturer\'s code and are marked present instantly.', 'qr'),
+      flip('lime', '<span class="hc-k">MC · CL001</span><span class="hc-v sm">' + (ms ? 'Diluluskan' : 'Approved') + ' ✓</span><span class="hc-k">' + (ms ? 'Kehadiran → Bersebab' : 'Attendance → Excused') + '</span>', ms ? 'Tuntutan MC dalam talian' : 'Online MC claims', ms ? 'Lulus sekali, rekod kehadiran dikemas kini sendiri.' : 'Approve once and attendance updates itself.', 'med'),
+      flip('w', '<span class="hc-k">' + (ms ? 'Konsultasi' : 'Consultation') + '</span><span class="hc-v">10:30</span><span class="hc-k">' + (ms ? 'Isn, 6 Okt · Disahkan' : 'Mon, 6 Oct · Confirmed') + '</span>' + bars([30, 55, 40, 70], 'thin'), ms ? 'Tempah slot' : 'Book a slot', ms ? 'Pelajar tempah slot kosong pensyarah tanpa bertembung.' : 'Students book free lecturer slots with no clashes.', 'chat'),
+      flip('dark', '<span class="hc-k light">' + (ms ? 'Laporan PdP' : 'PdP report') + '</span><span class="hc-v">CSV</span><span class="hc-k light">' + (ms ? '1 klik · Excel / Sheets' : '1 click · Excel / Sheets') + '</span>', ms ? 'Laporan segera' : 'Instant reports', ms ? 'Bukti pemantauan PdP untuk penyelaras dan audit.' : 'PdP monitoring evidence for coordinators and audits.', 'report')
+    ];
+    var n = cards.length, step = 15;
+    var arc = cards.map(function (c, i) {
+      var a = (i - (n - 1) / 2) * step;
+      return '<div class="hc-slot" style="--a:' + a + 'deg;--i:' + i + '">' + c + '</div>';
+    }).join('');
     var feats = ms ? ['Kehadiran QR', 'Tuntutan MC', 'Amaran Awal', 'Konsultasi', 'Garis Masa Pelajar', 'Laporan PdP', 'Tugasan & Markah'] : ['QR Attendance', 'MC Claims', 'Early Warning', 'Consultation', 'Student Timeline', 'PdP Reports', 'Tasks & Marks'];
     var mq = feats.concat(feats).map(function (f) { return '<span>' + ic('spark') + esc(f) + '</span>'; }).join('');
     return '<div class="landing anim">' +
-      '<section class="sky"><div class="sky-nav"><span class="logo"><span class="logo-mark">PdP</span><span>MyPdP Insight</span></span>' +
+      '<section class="sky"' + bgAttr('hero') + '><div class="sky-nav"><span class="logo"><span class="logo-mark">PdP</span><span>MyPdP Insight</span></span>' +
       '<nav class="links" aria-label="Sections"><a href="#/login" data-act="scrollto" data-v="features">' + esc(t('landFeatures')) + '</a><a href="#/login" data-act="scrollto" data-v="loginbox">' + esc(t('login')) + '</a><a href="#/login" data-act="scrollto" data-v="about">' + esc(t('landHow')) + '</a></nav>' +
       '<div class="right-tools">' + langToggle() + '</div></div>' +
       '<div class="sky-hero"><h1>' + esc(t('landH1a')) + '<span>' + esc(t('landH1b')) + '</span></h1><p>' + esc(t('landP')) + '</p>' +
-      '<div class="sky-cta">' + (LIVE ? '' : '<button class="btn btn-ghost" data-act="demologin" data-v="L001">' + esc(t('viewDemo')) + '</button>') +
+      '<div class="sky-cta">' + (LIVE ? '' : '<button class="btn btn-ghost" data-act="demologin" data-v="L004">' + esc(t('viewDemo')) + '</button>') +
       '<button class="btn btn-primary" data-act="scrollto" data-v="loginbox">' + esc(t('getStarted')) + arw() + '</button></div></div>' +
-      '<div class="carousel" aria-hidden="true">' + cards + '</div><div class="rated">' + esc(t('landRated')) + '</div></section>' +
+      '<div class="hc-stage" id="hcstage"><div class="hc-arc" id="hcarc">' + arc + '</div></div><div class="rated">' + esc(t('landRated')) + '<span class="stars" aria-hidden="true">★★★★★</span><span class="small">' + esc(t('flipHint')) + '</span></div>' +
+      '<div class="cloud c1" aria-hidden="true"></div><div class="cloud c2" aria-hidden="true"></div><div class="cloud c3" aria-hidden="true"></div><div class="cloud c4" aria-hidden="true"></div></section>' +
       '<div class="marquee" id="features" aria-hidden="true"><div class="track">' + mq + '</div></div>' +
       '<div class="about" id="about"><div class="eyebrow">' + esc(t('landAbout')) + '</div><h2>' + esc(t('about1')) + ' <span class="pill-ico" style="background:var(--sky-2);color:#fff">' + ic('pie') + '</span> ' + esc(t('about2')) +
       ' <span class="soft">' + esc(t('about3')) + ' <span class="pill-ico" style="background:var(--lime);color:var(--lime-ink)">' + ic('bulb') + '</span> ' + esc(t('about4')) + '</span></h2></div>' +
@@ -262,6 +395,14 @@
       '</div></div><p class="small muted" style="text-align:center;margin-top:26px">' + esc(CFG.INSTITUTION || '') + ' · MyPdP Insight</p></div>';
   }
 
+  function pinSetupView() {
+    return '<div class="landing"><div class="card pin-card anim"><div class="pin-top"><span class="logo-mark">PdP</span>' + langToggle() + '</div>' +
+      '<div class="eyebrow">' + esc(S.user.user_id) + ' · ' + esc(t(S.user.role)) + '</div><h1>' + esc(t('pinSetupTitle')) + '</h1><p class="muted">' + esc(t('pinSetupText')) + '</p>' +
+      '<form data-form="pinsetup"><label for="ps-o">' + esc(t('oldPin')) + '</label><input id="ps-o" name="old_pin" type="password" inputmode="numeric" autocomplete="current-password" required>' +
+      '<label for="ps-n">' + esc(t('newPin')) + '</label><input id="ps-n" name="new_pin" type="password" inputmode="numeric" pattern="\\d{6,8}" autocomplete="new-password" required>' +
+      '<label for="ps-c">' + esc(t('confirmPin')) + '</label><input id="ps-c" name="confirm_pin" type="password" inputmode="numeric" autocomplete="new-password" required>' +
+      '<div class="actions"><button class="btn btn-primary" type="submit">' + esc(t('save')) + arw() + '</button><button class="btn btn-ghost" type="button" data-act="logout">' + esc(t('logout')) + '</button></div></form></div></div>';
+  }
   function doLogin(id, pin) {
     return api('login', { user_id: id, pin: pin }).then(function (d) { setSession(d.token, d.user); go('#/dashboard'); })
       .catch(function (e) { toast(msg(e), true); });
@@ -275,7 +416,7 @@
       var order = { green: 0, yellow: 1, orange: 2, red: 3 };
       var worst = d.classes.reduce(function (w, c) { return order[c.risk.level] > order[w] ? c.risk.level : w; }, 'green');
       var avg = d.classes.length ? Math.round(d.classes.reduce(function (a, c) { return a + c.attendance.percent; }, 0) / d.classes.length * 10) / 10 : 0;
-      var html = '<section class="hero-banner">' + swoosh() + '<div><div class="eyebrow">' + fdate(nowIso().slice(0, 10), true) + '</div><h1>' + esc(t('hello')) + ', ' + esc(S.user.name.split(' ')[0]) + '</h1>' +
+      var html = '<section class="hero-banner"' + bgAttr('bannerStudent') + '>' + swoosh() + '<div><div class="eyebrow">' + fdate(nowIso().slice(0, 10), true) + '</div><h1>' + esc(t('hello')) + ', ' + esc(S.user.name.split(' ')[0]) + '</h1>' +
         '<p>' + esc(worst === 'orange' || worst === 'red' ? t('heroStudentRisk') : t('heroStudentOk')) + '</p>' +
         '<div class="actions" style="margin:0"><a class="btn btn-primary" href="#/checkin">' + ic('qr') + esc(t('nCheckin')) + arw() + '</a>' +
         (worst === 'orange' || worst === 'red' ? '<a class="btn btn-dark" href="#/consult">' + ic('chat') + esc(t('bookSlot')) + '</a>' : '') + '</div></div>' +
@@ -331,7 +472,7 @@
       var pendingIds = {};
       claims.forEach(function (c) { if (c.status !== 'Rejected') c.sessions.forEach(function (s) { pendingIds[s.session_id] = 1; }); });
       var sess = cls ? cls.attendance.sessions.filter(function (s) { return s.status !== 'P' && s.status !== 'E' && !pendingIds[s.session_id]; }) : [];
-      var html = '<div class="pagehead"><h1>' + esc(t('nClaims')) + '</h1></div><div class="grid g2 anim"><div class="card"><h2>' + esc(t('claimNew')) + '</h2><p class="small muted">' + esc(t('claimIntro')) + '</p>' +
+      var html = '<div class="pagehead"><h1>' + esc(t('nClaims')) + '</h1></div><div class="spot"><div>' + illu('claim') + '</div><p>' + esc(t('claimIntro')) + '</p></div><div class="grid g2 anim"><div class="card"><h2>' + esc(t('claimNew')) + '</h2><p class="small muted">' + esc(t('claimIntro')) + '</p>' +
         '<form data-form="claim"><label for="c-class">' + esc(t('chooseClass')) + '</label><select id="c-class" name="class_id" data-act="claimclass">' +
         att.classes.map(function (c) { return '<option value="' + c.class_id + '"' + (cls && c.class_id === cls.class_id ? ' selected' : '') + '>' + esc(c.course_code + ' · ' + c.class_name) + '</option>'; }).join('') + '</select>' +
         '<label>' + esc(t('chooseSessions')) + '</label>' + (sess.length ? sess.map(function (s) {
@@ -351,7 +492,7 @@
 
   S_PAGES.tasks = function () {
     return api('myTasks').then(function (classes) {
-      var html = '<div class="pagehead"><h1>' + esc(t('nTasks')) + '</h1></div>';
+      var html = '<div class="pagehead"><h1>' + esc(t('nTasks')) + '</h1></div><div class="spot"><div>' + illu('tasks') + '</div><p>' + esc(t('tasksIntro')) + '</p></div>';
       classes.forEach(function (c) {
         html += '<div class="card"><h2>' + esc(c.course_code) + ' · ' + esc(c.class_name) + ' <span class="small muted">' + esc(c.course_name) + '</span></h2>' + (c.tasks.length ? '<div class="tablewrap"><table><thead><tr><th>' + esc(t('taskTitle')) + '</th><th>' + esc(t('due')) + '</th><th>' + esc(t('status')) + '</th><th>' + esc(t('marks')) + '</th><th></th></tr></thead><tbody>' +
           c.tasks.map(function (x) {
@@ -385,17 +526,18 @@
     });
   };
 
+  var myClassList = [];
   S_PAGES.consult = function () {
-    return Promise.all([api('openSlots'), api('myBookings')]).then(function (res) {
-      var slots = res[0], mine = res[1];
-      var html = '<div class="pagehead"><h1>' + esc(t('nConsult')) + '</h1></div><div class="grid g2 anim"><div class="card"><h2>' + esc(t('openSlots')) + '</h2>' +
+    return Promise.all([api('openSlots'), api('myBookings'), api('studentDashboard')]).then(function (res) {
+      var slots = res[0], mine = res[1]; myClassList = res[2].classes;
+      var html = '<div class="pagehead"><h1>' + esc(t('nConsult')) + '</h1></div><div class="spot"><div>' + illu('consult') + '</div><p>' + esc(t('consultPrompt')) + '</p></div><div class="grid g2 anim"><div class="card"><h2>' + esc(t('openSlots')) + '</h2>' +
         (slots.length ? '<ul class="list">' + slots.map(function (s) {
           return '<li><div><strong>' + fdate(s.date, true) + '</strong> · ' + esc(s.start) + '–' + esc(s.end) + '<div class="small muted">' + esc(s.lecturer) + ' · ' + esc(s.mode === 'Online' ? t('online') : t('inPerson')) + ' · ' + esc(s.location) + '</div></div>' +
-            '<button class="btn btn-primary btn-sm" data-act="book" data-v="' + s.slot_id + '" data-label="' + esc(fdate(s.date) + ' ' + s.start + ' · ' + s.lecturer) + '">' + esc(t('bookSlot')) + '</button></li>';
+            '<button class="btn btn-primary btn-sm" data-act="book" data-v="' + s.slot_id + '" data-lec="' + s.lecturer_id + '" data-label="' + esc(fdate(s.date) + ' ' + s.start + ' · ' + s.lecturer) + '">' + esc(t('bookSlot')) + '</button></li>';
         }).join('') + '</ul>' : '<div class="empty">' + esc(t('noSlots')) + '</div>') + '</div>' +
         '<div class="card"><h2>' + esc(t('myBookings')) + '</h2>' + (mine.length ? '<ul class="list">' + mine.map(function (b) {
           var canCancel = b.status === 'Pending' || b.status === 'Confirmed';
-          return '<li style="align-items:flex-start"><div><strong>' + fdate(b.date) + '</strong> · ' + esc(b.start) + ' · ' + esc(b.lecturer) + '<div class="small muted">' + esc(b.purpose) + '</div>' + (b.notes ? '<div class="small">' + ic('tasks') + ' ' + esc(b.notes) + '</div>' : '') + '</div>' +
+          return '<li style="align-items:flex-start"><div><strong>' + fdate(b.date) + '</strong> · ' + esc(b.start) + ' · ' + esc(b.lecturer) + (b.course ? '<div class="small"><span class="badge b-blue">' + esc(b.course) + '</span></div>' : '') + '<div class="small muted">' + esc(b.purpose) + '</div>' + (b.notes ? '<div class="small">' + ic('tasks') + ' ' + esc(b.notes) + '</div>' : '') + '</div>' +
             '<div class="right">' + bookBadge(b.status) + (canCancel ? '<div style="margin-top:6px"><button class="btn btn-ghost btn-sm" data-act="cancelbooking" data-v="' + b.booking_id + '">' + esc(t('cancel')) + '</button></div>' : '') + '</div></li>';
         }).join('') + '</ul>' : '<div class="empty">' + esc(t('noBookings')) + '</div>') + '</div></div>';
       return html;
@@ -404,9 +546,9 @@
 
   S_PAGES.checkin = function (r) {
     var code = (r.args[0] || '').toUpperCase();
-    var html = '<div class="pagehead"><h1>' + esc(t('checkinTitle')) + '</h1></div><div class="card" style="max-width:460px"><p>' + esc(t('checkinHint')) + '</p>' +
+    var html = '<div class="pagehead"><h1>' + esc(t('checkinTitle')) + '</h1></div><div class="grid g2 anim" style="align-items:center"><div class="card"><p>' + esc(t('checkinHint')) + '</p>' +
       '<form data-form="checkin"><label for="ci-code">' + esc(t('code')) + '</label><input id="ci-code" name="code" type="text" maxlength="6" autocapitalize="characters" value="' + esc(code) + '" style="font-size:1.6rem;letter-spacing:.3em;text-transform:uppercase;text-align:center" required>' +
-      '<div class="actions"><button class="btn btn-primary" type="submit" style="width:100%">' + esc(t('submit')) + '</button></div></form><div id="ci-result"></div></div>';
+      '<div class="actions"><button class="btn btn-primary" type="submit" style="width:100%">' + esc(t('submit')) + '</button></div></form><div id="ci-result"></div></div><div class="spot-big">' + illu('qr') + '</div></div>';
     if (code) pageAfter = function () { var f = document.querySelector('[data-form="checkin"]'); if (f) FORMS.checkin(f); };
     return Promise.resolve(html);
   };
@@ -441,7 +583,7 @@
       var totalStudents = d.classes.reduce(function (a, c) { return a + c.students; }, 0);
       var avgAtt = d.classes.length ? Math.round(d.classes.reduce(function (a, c) { return a + c.attendance; }, 0) / d.classes.length * 10) / 10 : 0;
       var toGrade = d.classes.reduce(function (a, c) { return a + c.toGrade; }, 0);
-      var html = '<section class="hero-banner">' + swoosh() + '<div><div class="eyebrow">' + fdate(nowIso().slice(0, 10), true) + '</div><h1>' + esc(t('hello')) + ', ' + esc(S.user.name) + '</h1>' +
+      var html = '<section class="hero-banner"' + bgAttr('bannerLecturer') + '>' + swoosh() + '<div><div class="eyebrow">' + fdate(nowIso().slice(0, 10), true) + '</div><h1>' + esc(t('hello')) + ', ' + esc(S.user.name) + '</h1>' +
         '<p>' + esc(d.atRisk.length ? t('heroLect', { n: d.atRisk.length }) : t('allOnTrack')) + '</p>' +
         '<div class="actions" style="margin:0"><a class="btn btn-primary" href="#/attendance">' + ic('calendar') + esc(t('nAttendanceL')) + arw() + '</a><a class="btn btn-dark" href="#/classes">' + ic('users') + esc(t('viewStudents')) + '</a></div></div>' +
         '<div class="hero-float"><div class="chip-card" style="--i:0"><div class="k">' + esc(t('avgAttendance')) + '</div><div class="v">' + cnt(avgAtt, '%') + '</div></div>' +
@@ -477,10 +619,24 @@
 
   L_PAGES.classes = function () {
     return api('myClasses').then(function (classes) {
-      if (classes.length === 1) { return L_PAGES['class']({ args: [classes[0].class_id] }); }
-      return '<div class="pagehead"><h1>' + esc(t('nClasses')) + '</h1></div><div class="grid g3 anim">' + classes.map(function (c) {
-        return '<a class="card" href="#/class/' + c.class_id + '" style="text-decoration:none;color:inherit"><strong>' + esc(c.course_code) + ' · ' + esc(c.class_name) + '</strong><div class="small muted">' + esc(c.course_name) + '</div><div class="small muted">' + esc(c.semester) + ' · ' + c.students + ' ' + esc(t('students').toLowerCase()) + '</div></a>';
-      }).join('') + '</div>';
+      var sems = {};
+      classes.forEach(function (c) { var sm = sems[c.semester] = sems[c.semester] || {}; (sm[c.course_code] = sm[c.course_code] || []).push(c); });
+      var html = '<div class="pagehead"><div><h1>' + esc(t('myCourses')) + '</h1><div class="muted">' + esc(t('myCoursesSub')) + '</div></div></div>';
+      Object.keys(sems).sort().reverse().forEach(function (sem) {
+        html += '<div class="eyebrow" style="margin:6px 0 12px">' + esc(sem) + '</div><div class="grid g2 anim" style="margin-bottom:22px">';
+        Object.keys(sems[sem]).sort().forEach(function (code) {
+          var list = sems[sem][code], name = list[0].course_name;
+          var total = list.reduce(function (a, c) { return a + c.students; }, 0);
+          html += '<div class="card course"><div class="course-head">' + cover(code, false, list[0].lecturer_programme) + '<div><div class="eyebrow">' + esc(code) + '</div><h2 style="margin:4px 0 2px">' + esc(name) + '</h2><div class="small muted">' + list.length + ' ' + esc(t('classesWord')) + ' · ' + total + ' ' + esc(t('students').toLowerCase()) + '</div></div></div>' +
+            '<div class="class-rows">' + list.map(function (c) {
+              return '<a class="class-row" href="#/class/' + c.class_id + '"><span class="cr-name">' + esc(c.class_name) + '</span><span class="small muted">' + c.students + ' ' + esc(t('students').toLowerCase()) + '</span>' +
+                '<span class="cr-att"><span class="small muted">' + esc(t('attendance')) + '</span> <strong>' + c.attendance + '%</strong></span>' +
+                (c.atRisk ? '<span class="badge b-red b-dot">' + c.atRisk + ' ' + esc(t('atRiskShort')) + '</span>' : '<span class="badge b-green b-dot">' + esc(t('riskGreen')) + '</span>') + '<span class="cr-go">' + ic('arrow') + '</span></a>';
+            }).join('') + '</div></div>';
+        });
+        html += '</div>';
+      });
+      return html;
     });
   };
 
@@ -489,7 +645,8 @@
       var d = res[0], c = d.cls;
       var order = { red: 0, orange: 1, yellow: 2, green: 3 };
       var list = d.students.slice().sort(function (a, b) { return order[a.level] - order[b.level] || (a.name < b.name ? -1 : 1); });
-      return '<div class="pagehead"><div><h1>' + esc(c.course_code) + ' · ' + esc(c.class_name) + '</h1><div class="muted">' + esc(c.course_name) + ' · ' + esc(c.semester) + '</div></div>' + classPicker(res[1], c.class_id, '#/class/') + '</div>' +
+      var me = res[1].filter(function (x) { return x.class_id === c.class_id; })[0] || {};
+      return '<div class="pagehead"><div class="course-head">' + cover(c.course_code, false, me.lecturer_programme || S.user.programme) + '<div><a class="back" href="#/classes">← ' + esc(t('myCourses')) + '</a><h1>' + esc(c.course_code) + ' · ' + esc(c.class_name) + '</h1><div class="muted">' + esc(c.course_name) + ' · ' + esc(c.semester) + '</div></div></div>' + classPicker(res[1], c.class_id, '#/class/') + '</div>' +
         '<div class="card"><div class="tablewrap"><table><thead><tr><th>' + esc(t('name')) + '</th><th>' + esc(t('attendance')) + '</th><th class="hide-sm">' + esc(t('absences')) + '</th><th>' + esc(t('tMissing')) + '</th><th class="hide-sm">' + esc(t('average')) + '</th><th>' + esc(t('status')) + '</th></tr></thead><tbody>' +
         list.map(function (s) {
           return '<tr class="clickable" data-act="nav" data-v="#/student/' + c.class_id + '/' + s.student_id + '"><td><strong>' + esc(s.name) + '</strong><div class="small muted">' + esc(s.student_id) + '</div></td>' +
@@ -539,8 +696,8 @@
   var rosterState = {};
   L_PAGES.session = function (r) {
     return api('sessionRoster', { session_id: r.args[0] }).then(function (d) {
-      rosterState = { session_id: d.session.session_id, marks: {} };
-      d.roster.forEach(function (x) { rosterState.marks[x.student_id] = x.status; });
+      rosterState = { session_id: d.session.session_id, marks: {}, orig: {} };
+      d.roster.forEach(function (x) { rosterState.marks[x.student_id] = x.status; rosterState.orig[x.student_id] = x.status; });
       return '<div class="pagehead"><div><a class="small" href="#/attendance?c=' + d.cls.class_id + '">← ' + esc(t('sessions')) + '</a><h1>' + esc(d.cls.course_code) + ' · ' + esc(d.cls.class_name) + '</h1><div class="muted">' + fdate(d.session.date, true) + ' · ' + esc(d.session.start) + '–' + esc(d.session.end) + ' · ' + esc(d.session.topic) + '</div></div>' +
         '<div class="actions" style="margin:0"><button class="btn btn-ghost" data-act="showqr" data-v="' + d.session.session_id + '">' + ic('qr') + ' ' + esc(t('showQR')) + '</button><button class="btn btn-ghost" data-act="markall">' + ic('check') + ' ' + esc(t('markAll')) + '</button></div></div>' +
         '<div class="card"><div class="tablewrap"><table class="roster"><thead><tr><th>' + esc(t('name')) + '</th><th>' + esc(t('status')) + '</th></tr></thead><tbody>' + d.roster.map(function (x) {
@@ -612,7 +769,7 @@
     return api('myClasses').then(function (classes) {
       var cid = r.q.c || (classes[0] && classes[0].class_id);
       var rep = [['attendance', ic('calendar') + '', 'repAttendance'], ['submissions', ic('tasks') + '', 'repSubmissions'], ['pdp', ic('report') + '', 'repPdp']];
-      return '<div class="pagehead"><h1>' + esc(t('nReports')) + '</h1>' + classPicker(classes, cid, '#/reports?c=') + '</div><p class="muted">' + esc(t('reportIntro')) + '</p><div class="grid g3 anim">' + rep.map(function (x) {
+      return '<div class="pagehead"><h1>' + esc(t('nReports')) + '</h1>' + classPicker(classes, cid, '#/reports?c=') + '</div><div class="spot"><div>' + illu('report') + '</div><p>' + esc(t('reportIntro')) + '</p></div><div class="grid g3 anim">' + rep.map(function (x) {
         var tc = ['t-brand', 't-lime', 't-night'][rep.indexOf(x)]; return '<div class="tile ' + tc + '"><span class="go">' + x[1] + '</span><h3 style="font-size:1.2rem;max-width:16ch;margin-top:30px">' + esc(t(x[2])) + '</h3><button class="btn ' + (tc === 't-lime' ? 'btn-dark' : 'btn-primary') + '" data-act="export" data-k="' + x[0] + '" data-c="' + cid + '">' + ic('download') + ' ' + esc(t('download')) + ' CSV</button></div>';
       }).join('') + '</div>';
     });
@@ -623,6 +780,7 @@
   var ACTIONS = {
     lang: function (el) { lang = el.dataset.v; sset('mypdp_lang', lang); render(); },
     nav: function (el) { go(el.dataset.v); },
+    flipcard: function (el) { el.classList.toggle('flipped'); el.classList.add('held'); setTimeout(function () { el.classList.remove('held'); }, 4000); },
     scrollto: function (el) { var x = document.getElementById(el.dataset.v); if (x) { x.scrollIntoView({ behavior: 'smooth', block: 'start' }); var f = x.querySelector('input'); if (f) setTimeout(function () { f.focus({ preventScroll: true }); }, 500); } },
     usermenu: function () { var m = document.getElementById('umenu'); if (m) m.classList.toggle('hidden'); },
     logout: function () { logout(); },
@@ -640,7 +798,9 @@
         '<label for="sw-file">' + esc(t('orFile')) + '</label><input id="sw-file" name="file" type="file"><div class="small muted">' + esc(t('uploadHint', { mb: S.settings.maxMb || 5 }).split('·').pop()) + (LIVE ? '' : ' · ' + esc(t('noFileDemo'))) + '</div>' + formBtns(t('submit')) + '</form>');
     },
     book: function (el) {
+      var opts = myClassList.filter(function (c) { return c.lecturer_id === el.dataset.lec; });
       modal('<h2>' + esc(t('bookSlot')) + '</h2><p class="muted">' + esc(el.dataset.label) + '</p><form data-form="book"><input type="hidden" name="slot_id" value="' + esc(el.dataset.v) + '">' +
+        '<label for="bk-c">' + esc(t('chooseClassConsult')) + '</label><select id="bk-c" name="class_id" required>' + opts.map(function (c) { return '<option value="' + c.class_id + '">' + esc(c.course_code + ' · ' + c.course_name + ' (' + c.class_name + ')') + '</option>'; }).join('') + '</select>' +
         '<label for="bk-p">' + esc(t('purpose')) + '</label><textarea id="bk-p" name="purpose" maxlength="300" required></textarea>' + formBtns(t('bookSlot')) + '</form>');
     },
     cancelbooking: function (el) { api('cancelBooking', { booking_id: el.dataset.v }).then(function () { toast(t('saved')); render(); }, errToast); },
@@ -685,8 +845,14 @@
       });
     },
     saveatt: function (el) {
-      el.disabled = true;
       var marks = Object.keys(rosterState.marks).filter(function (k) { return rosterState.marks[k]; }).map(function (k) { return { student_id: k, status: rosterState.marks[k] }; });
+      var fromE = marks.filter(function (m) { return rosterState.orig[m.student_id] === 'E' && m.status !== 'E'; });
+      if (fromE.length) {
+        rosterState.pending = marks;
+        modal('<h2>' + esc(t('correctionTitle')) + '</h2><p class="muted">' + esc(t('correctionText')) + '</p><form data-form="attreason"><label for="ar-r">' + esc(t('correctionReason')) + '</label><textarea id="ar-r" name="reason" maxlength="300" required></textarea>' + formBtns() + '</form>');
+        return;
+      }
+      el.disabled = true;
       api('markAttendance', { session_id: rosterState.session_id, marks: marks }).then(function (d) { toast(t('changed', { n: d.changed })); render(); }, function (e) { el.disabled = false; errToast(e); });
     },
     decide: function (el) {
@@ -706,6 +872,7 @@
         '<label for="nt-t">' + esc(t('taskTitle')) + '</label><input id="nt-t" name="title" type="text" maxlength="150" required>' +
         '<div class="row"><div><label for="nt-y">' + esc(t('taskType')) + '</label><select id="nt-y" name="type">' + types.map(function (x) { return '<option value="' + x + '">' + esc(typeLabel(x)) + '</option>'; }).join('') + '</select></div>' +
         '<div><label for="nt-m">' + esc(t('maxMarks')) + '</label><input id="nt-m" name="max_marks" type="number" min="1" max="1000" value="10" required></div></div>' +
+        '<label for="nt-s">' + esc(t('assessOrder')) + ' <span class="muted">(' + esc(t('optional')) + ')</span></label><input id="nt-s" name="seq" type="number" min="1" max="50" placeholder="' + esc(t('assessOrderHint')) + '">' +
         '<label for="nt-d">' + esc(t('due')) + '</label><input id="nt-d" name="due_at" type="datetime-local" value="' + MyPdPCore.iso(d) + '" required>' +
         '<label for="nt-i">' + esc(t('description')) + '</label><textarea id="nt-i" name="description" maxlength="1000"></textarea>' + formBtns() + '</form>');
     },
@@ -775,6 +942,12 @@
 
   var FORMS = {
     login: function (f) { var d = formData(f); busy(f, true); doLogin(d.user_id.trim(), d.pin).then(function () { busy(f, false); }); },
+    pinsetup: function (f) {
+      var d = formData(f);
+      if (d.new_pin !== d.confirm_pin) return toast(t('pinMismatch'), true);
+      busy(f, true);
+      api('changePin', { old_pin: d.old_pin, new_pin: d.new_pin }).then(function () { S.user.must_change_pin = false; setSession(S.token, S.user); toast(t('pinChanged')); go('#/dashboard'); }, function (e) { busy(f, false); errToast(e); });
+    },
     changepin: function (f) { api('changePin', formData(f)).then(done(t('pinChanged')), errToast); },
     claim: function (f) {
       var d = formData(f);
@@ -800,6 +973,7 @@
         busy(f, false);
       }, function (e) { busy(f, false); box.innerHTML = '<div class="alert alert-red" style="margin-top:14px">' + esc(msg(e)) + '</div>'; });
     },
+    attreason: function (f) { api('markAttendance', { session_id: rosterState.session_id, marks: rosterState.pending, reason: formData(f).reason }).then(function (d) { closeModal(); toast(t('changed', { n: d.changed })); render(); }, errToast); },
     intervene: function (f) { api('addIntervention', formData(f)).then(done(), errToast); },
     newsession: function (f) { api('createSession', formData(f)).then(function (d) { closeModal(); toast(t('saved')); go('#/session/' + d.session_id); }, errToast); },
     decide: function (f, submitter) {

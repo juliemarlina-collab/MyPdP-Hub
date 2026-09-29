@@ -2,7 +2,11 @@
    To change a word on screen, edit it here. Keep the key (left side) the same. */
 window.MYPDP_I18N = {
   ms: {
-    classesCount: 'Kelas', studentPortal: 'PORTAL PELAJAR', lecturerPortal: 'PORTAL PENSYARAH', sideTip: ' Kehadiran di bawah had akan dipaparkan sebagai amaran awal.',
+    pinSetupTitle: 'Tetapkan PIN anda sendiri', pinSetupText: 'Ini log masuk pertama anda. Gantikan PIN sementara dengan PIN peribadi 6–8 digit. Elakkan digit berulang atau berturutan.',
+    confirmPin: 'Sahkan PIN baharu', pinMismatch: 'PIN baharu tidak sepadan.', chooseClassConsult: 'Konsultasi untuk kelas', myCourses: 'Kursus Saya', myCoursesSub: 'Semester → kursus → kelas. Klik kelas untuk lihat pelajar.',
+    classesWord: 'kelas', atRiskShort: 'berisiko', correctionTitle: 'Pembetulan rekod bersebab', correctionText: 'Anda menukar sesi yang direkod sebagai Tidak Hadir Bersebab (tuntutan diluluskan). Nyatakan sebab; ia disimpan dalam log audit.',
+    correctionReason: 'Sebab pembetulan', assessOrder: 'Urutan penilaian', assessOrderHint: 'cth. 3 (auto jika kosong)', tasksIntro: 'Hantar pautan atau fail sebelum tarikh akhir. Markah dan maklum balas dipaparkan di sini.',
+    flipHint: 'Klik kad untuk lihat ciri', classesCount: 'Kelas', studentPortal: 'PORTAL PELAJAR', lecturerPortal: 'PORTAL PENSYARAH', sideTip: ' Kehadiran di bawah had akan dipaparkan sebagai amaran awal.',
     heroStudentOk: 'Anda di landasan yang betul. Semak tugasan minggu ini dan teruskan usaha!', heroStudentRisk: 'Ada perkara yang perlu dikejar. Tempah konsultasi dan kita selesaikan bersama.',
     heroLect: '{n} pelajar perlu perhatian anda minggu ini. Bertindak awal sebelum penilaian akhir.', avgAttendance: 'Purata kehadiran', attendanceTrend: 'Kehadiran mengikut sesi', latest: 'Terkini',
     claimsPendingShort: 'Tuntutan menunggu', landFeatures: 'Ciri-ciri', landHow: 'Cara ia berfungsi',
@@ -24,7 +28,7 @@ window.MYPDP_I18N = {
     none: 'Tiada', yes: 'Ya', no: 'Tidak', all: 'Semua', date: 'Tarikh', time: 'Masa', topic: 'Topik', status: 'Status', class: 'Kelas', course: 'Kursus',
     name: 'Nama', due: 'Tarikh akhir', marks: 'Markah', feedback: 'Maklum balas', note: 'Catatan', optional: 'pilihan', required: 'wajib',
     saved: 'Berjaya disimpan', sent: 'Berjaya dihantar', error: 'Ralat', networkError: 'Tidak dapat menghubungi pelayan. Semak internet anda.',
-    hello: 'Hai', changePin: 'Tukar PIN', oldPin: 'PIN semasa', newPin: 'PIN baharu (4–8 digit)', pinChanged: 'PIN berjaya ditukar',
+    hello: 'Hai', changePin: 'Tukar PIN', oldPin: 'PIN semasa', newPin: 'PIN baharu (6–8 digit)', pinChanged: 'PIN berjaya ditukar',
     language: 'Bahasa', today: 'Hari ini', open: 'Buka', lecturerName: 'Pensyarah', students: 'Pelajar', action: 'Tindakan',
     // risk
     riskGreen: 'Di Landasan', riskYellow: 'Pantau', riskOrange: 'Perlu Intervensi', riskRed: 'Perhatian Tinggi',
@@ -81,7 +85,11 @@ window.MYPDP_I18N = {
     yourClasses: 'Kelas anda', recentMarks: 'Markah terkini', upcomingConsult: 'Temujanji akan datang', claimsPending: 'tuntutan menunggu semakan'
   },
   en: {
-    classesCount: 'Classes', studentPortal: 'STUDENT PORTAL', lecturerPortal: 'LECTURER PORTAL', sideTip: ' Attendance below the minimum shows up as an early warning.',
+    pinSetupTitle: 'Set your own PIN', pinSetupText: 'This is your first login. Replace the temporary PIN with a personal 6–8 digit PIN. Avoid repeated or running digits.',
+    confirmPin: 'Confirm new PIN', pinMismatch: 'The new PINs do not match.', chooseClassConsult: 'Consultation for class', myCourses: 'My Courses', myCoursesSub: 'Semester → course → class. Open a class to see its students.',
+    classesWord: 'classes', atRiskShort: 'at risk', correctionTitle: 'Correcting an excused absence', correctionText: 'You are changing a session recorded as Absent with reason (approved claim). Give a reason; it is saved in the audit log.',
+    correctionReason: 'Reason for the correction', assessOrder: 'Assessment order', assessOrderHint: 'e.g. 3 (automatic if empty)', tasksIntro: 'Submit a link or file before the due date. Marks and feedback appear here.',
+    flipHint: 'Tap a card to flip it', classesCount: 'Classes', studentPortal: 'STUDENT PORTAL', lecturerPortal: 'LECTURER PORTAL', sideTip: ' Attendance below the minimum shows up as an early warning.',
     heroStudentOk: "You're on track. Check this week's tasks and keep it up!", heroStudentRisk: "A few things need catching up. Book a consultation and we'll sort it out together.",
     heroLect: '{n} students need your attention this week. Act early, before final assessment.', avgAttendance: 'Average attendance', attendanceTrend: 'Attendance by session', latest: 'Latest',
     claimsPendingShort: 'Claims pending', landFeatures: 'Features', landHow: 'How it works',
@@ -101,7 +109,7 @@ window.MYPDP_I18N = {
     none: 'None', yes: 'Yes', no: 'No', all: 'All', date: 'Date', time: 'Time', topic: 'Topic', status: 'Status', class: 'Class', course: 'Course',
     name: 'Name', due: 'Due', marks: 'Marks', feedback: 'Feedback', note: 'Note', optional: 'optional', required: 'required',
     saved: 'Saved', sent: 'Sent', error: 'Error', networkError: 'Cannot reach the server. Check your internet connection.',
-    hello: 'Hi', changePin: 'Change PIN', oldPin: 'Current PIN', newPin: 'New PIN (4–8 digits)', pinChanged: 'PIN changed',
+    hello: 'Hi', changePin: 'Change PIN', oldPin: 'Current PIN', newPin: 'New PIN (6–8 digits)', pinChanged: 'PIN changed',
     language: 'Language', today: 'Today', open: 'Open', lecturerName: 'Lecturer', students: 'Students', action: 'Action',
     riskGreen: 'On Track', riskYellow: 'Monitor', riskOrange: 'Intervention Needed', riskRed: 'High Attention',
     sRiskGreen: 'On track', sRiskYellow: 'Keep an eye on it', sRiskOrange: "Let's catch up", sRiskRed: 'Please see your lecturer',

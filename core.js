@@ -78,7 +78,7 @@ var MyPdPCore = (function () {
   function enrolled(db, classId) {
     return db.all('Enrolments').filter(function (e) { return e.class_id === classId; }).map(function (e) { return e.student_id; });
   }
-  function publicUser(u) { return { user_id: u.user_id, role: u.role, name: u.name, email: u.email, programme: u.programme }; }
+  function publicUser(u) { return { user_id: u.user_id, role: u.role, name: u.name, email: u.email, programme: u.programme, must_change_pin: truthy(u.must_change_pin) }; }
 
   // ---------- calculations ----------
   /** Attendance % = attended / counted sessions × 100.
@@ -112,6 +112,12 @@ var MyPdPCore = (function () {
     return nowIso > task.due_at ? 'Missing' : 'Not submitted';
   }
 
+  /** Assessment order: the lecturer-set `seq` (1, 2, 3…) comes first; tasks without one follow, by due date. */
+  function bySeq(a, b) {
+    var sa = num(a.seq) || 9999, sb = num(b.seq) || 9999;
+    if (sa !== sb) return sa - sb;
+    return a.due_at < b.due_at ? -1 : (a.due_at > b.due_at ? 1 : 0);
+  }
   function tasksFor(db, studentId, classId, cache) {
     var nowIso = iso(db.now());
     var subs = cache.submissions || db.all('Submissions');
@@ -121,28 +127,39 @@ var MyPdPCore = (function () {
       var s = mine[t.task_id];
       return { task_id: t.task_id, class_id: t.class_id, title: t.title, type: t.type, description: t.description, due_at: t.due_at,
         max_marks: num(t.max_marks), status: taskStatus(t, s, nowIso), submitted_at: s ? s.submitted_at : '',
-        link: s ? s.link : '', file_url: s ? s.file_url : '', marks: s && s.marks !== '' ? num(s.marks) : null, feedback: s ? s.feedback : '' };
-    }).sort(function (a, b) { return a.due_at < b.due_at ? -1 : 1; });
+        link: s ? s.link : '', file_url: s ? s.file_url : '', marks: s && s.marks !== '' ? num(s.marks) : null, feedback: s ? s.feedback : '', seq: num(t.seq) || 0 };
+    }).sort(bySeq);
   }
 
   /** Risk: red = attendance below threshold AND missing work;
    *  orange = below threshold OR missing >= missing_orange OR marks dropped twice in a row;
    *  yellow = 1 missing OR attendance within margin above threshold; else green. */
   function riskFor(att, tasks, cfg) {
-    var missing = tasks.filter(function (t) { return t.status === 'Missing'; }).length;
-    var graded = tasks.filter(function (t) { return t.marks !== null && t.max_marks; }).map(function (t) { return t.marks / t.max_marks * 100; });
-    var dropping = graded.length >= 3 && graded[graded.length - 1] < graded[graded.length - 2] && graded[graded.length - 2] < graded[graded.length - 3];
-    var avg = graded.length ? Math.round(graded.reduce(function (a, b) { return a + b; }, 0) / graded.length) : null;
+    var missingList = tasks.filter(function (t) { return t.status === 'Missing'; });
+    var missing = missingList.length;
+    // graded tasks in assessment sequence (seq), not in the order marks were released
+    var gradedT = tasks.filter(function (t) { return t.marks !== null && t.max_marks; });
+    var graded = gradedT.map(function (t) { return Math.round(t.marks / t.max_marks * 100); });
+    var n = graded.length;
+    var dropping = n >= 3 && graded[n - 1] < graded[n - 2] && graded[n - 2] < graded[n - 3];
+    var avg = n ? Math.round(graded.reduce(function (a, b) { return a + b; }, 0) / n) : null;
     var low = att.counted > 0 && att.percent < cfg.threshold;
     var level = 'green', reasons = [];
-    if (low) reasons.push({ en: 'Attendance ' + att.percent + '% (below ' + cfg.threshold + '%)', ms: 'Kehadiran ' + att.percent + '% (bawah ' + cfg.threshold + '%)' });
-    if (missing) reasons.push({ en: missing + ' missing task(s)', ms: missing + ' tugasan belum dihantar' });
-    if (dropping) reasons.push({ en: 'Marks dropping', ms: 'Markah menurun' });
+    var absTxt = { en: ' (' + att.absent + ' absent of ' + att.counted + ' sessions; minimum ' + cfg.threshold + '%)', ms: ' (' + att.absent + ' tidak hadir daripada ' + att.counted + ' sesi; minimum ' + cfg.threshold + '%)' };
+    if (low) reasons.push({ en: 'Attendance ' + att.percent + '%' + absTxt.en, ms: 'Kehadiran ' + att.percent + '%' + absTxt.ms });
+    if (missing) {
+      var titles = missingList.map(function (t) { return t.title; }).join(', ');
+      reasons.push({ en: missing + ' missing: ' + titles, ms: missing + ' belum dihantar: ' + titles });
+    }
+    if (dropping) {
+      var trail = gradedT.slice(-3).map(function (t, k) { return (t.title.split(':')[0]) + ' ' + graded[n - 3 + k] + '%'; }).join(' → ');
+      reasons.push({ en: 'Marks dropping: ' + trail, ms: 'Markah menurun: ' + trail });
+    }
     if (low && missing) level = 'red';
     else if (low || missing >= cfg.missingOrange || dropping) level = 'orange';
     else if (missing === 1 || (att.counted > 0 && att.percent < cfg.threshold + cfg.margin)) {
       level = 'yellow';
-      if (!missing) reasons.push({ en: 'Attendance close to limit (' + att.percent + '%)', ms: 'Kehadiran hampir had (' + att.percent + '%)' });
+      if (!missing) reasons.push({ en: 'Attendance close to the minimum: ' + att.percent + '%' + absTxt.en, ms: 'Kehadiran hampir had: ' + att.percent + '%' + absTxt.ms });
     }
     return { level: level, reasons: reasons, missing: missing, average: avg, dropping: dropping };
   }
@@ -163,12 +180,20 @@ var MyPdPCore = (function () {
   var H = {};
 
   // ---- auth & common ----
+  var MAX_TRIES = 5, LOCK_SECONDS = 15 * 60;
   H.login = function (db, _u, p) {
     need(p, ['user_id', 'pin']);
     var id = clean(p.user_id, 30).toUpperCase();
+    var key = 'fail_' + id;
+    var tries = db.kvGet ? num(db.kvGet(key)) : 0;
+    if (tries >= MAX_TRIES) fail('locked', 'Too many wrong attempts. Try again in 15 minutes or ask the admin to reset your PIN.', 'Terlalu banyak cubaan salah. Cuba lagi selepas 15 minit atau minta pentadbir set semula PIN.');
     var u = db.all('Users').filter(function (x) { return String(x.user_id).toUpperCase() === id; })[0];
-    if (!u || !truthy(u.active) || db.hash(u.user_id + ':' + String(p.pin)) !== u.pin_hash)
-      fail('login', 'Wrong ID or PIN.', 'ID atau PIN salah.');
+    if (!u || !truthy(u.active) || !u.pin_hash || db.hash(u.user_id + ':' + String(p.pin)) !== u.pin_hash) {
+      if (db.kvSet) db.kvSet(key, String(tries + 1), LOCK_SECONDS);
+      var left = MAX_TRIES - tries - 1;
+      fail('login', 'Wrong ID or PIN.' + (left > 0 && left <= 2 ? ' ' + left + ' attempt(s) left.' : ''), 'ID atau PIN salah.' + (left > 0 && left <= 2 ? ' Tinggal ' + left + ' cubaan.' : ''));
+    }
+    if (db.kvSet) db.kvSet(key, '0', 1);
     return publicUser(u);
   };
 
@@ -186,12 +211,21 @@ var MyPdPCore = (function () {
     return { ok: true };
   };
 
+  function weakPin(p) {
+    if (/^(\d)\1+$/.test(p)) return true;                       // 111111
+    var up = '0123456789012', down = '9876543210987';
+    if (up.indexOf(p) >= 0 || down.indexOf(p) >= 0) return true;  // 123456, 654321
+    return ['121212', '112233', '123123', '696969', '131313'].indexOf(p) >= 0;
+  }
   H.changePin = function (db, user, p) {
     need(p, ['old_pin', 'new_pin']);
-    if (!/^\d{4,8}$/.test(String(p.new_pin))) fail('pin', 'PIN must be 4–8 digits.', 'PIN mesti 4–8 digit.');
+    var np = String(p.new_pin);
+    if (!/^\d{6,8}$/.test(np)) fail('pin', 'New PIN must be 6–8 digits.', 'PIN baharu mesti 6–8 digit.');
+    if (weakPin(np)) fail('pin', 'This PIN is too easy to guess. Avoid repeated or running digits.', 'PIN ini terlalu mudah diteka. Elakkan digit berulang atau berturutan.');
+    if (np === String(p.old_pin)) fail('pin', 'The new PIN must be different from the current PIN.', 'PIN baharu mesti berbeza daripada PIN semasa.');
     var u = byKey(db.all('Users'), 'user_id')[user.user_id];
     if (db.hash(u.user_id + ':' + String(p.old_pin)) !== u.pin_hash) fail('pin', 'Current PIN is wrong.', 'PIN semasa salah.');
-    db.update('Users', function (x) { return x.user_id === user.user_id; }, { pin_hash: db.hash(u.user_id + ':' + String(p.new_pin)) });
+    db.update('Users', function (x) { return x.user_id === user.user_id; }, { pin_hash: db.hash(u.user_id + ':' + np), must_change_pin: 'FALSE' });
     audit(db, user, 'change_pin', user.user_id);
     return { ok: true };
   };
@@ -213,7 +247,7 @@ var MyPdPCore = (function () {
     });
     var bookings = H.myBookings(db, user).filter(function (b) { return (b.status === 'Pending' || b.status === 'Confirmed') && b.date >= nowIso.slice(0, 10); });
     var claims = H.myClaims(db, user).filter(function (c) { return c.status === 'Pending'; });
-    return { classes: classes.map(function (c) { return { class_id: c.class_id, course_code: c.course_code, course_name: c.course_name, class_name: c.class_name, lecturer: c.lecturer, attendance: { percent: c.attendance.percent, absent: c.attendance.absent }, risk: c.risk }; }),
+    return { classes: classes.map(function (c) { return { class_id: c.class_id, course_code: c.course_code, course_name: c.course_name, class_name: c.class_name, lecturer: c.lecturer, lecturer_id: c.lecturer_id, attendance: { percent: c.attendance.percent, absent: c.attendance.absent }, risk: c.risk }; }),
       upcoming: upcoming.sort(function (a, b) { return a.due_at < b.due_at ? -1 : 1; }), missing: missing,
       recentMarks: recentMarks.slice(-5).reverse(), bookings: bookings, pendingClaims: claims.length, threshold: cfg.threshold };
   };
@@ -238,6 +272,7 @@ var MyPdPCore = (function () {
     if (enrolled(db, s.class_id).indexOf(user.user_id) < 0) fail('forbidden', 'You are not in this class.', 'Anda bukan pelajar kelas ini.');
     var existing = db.all('Attendance').filter(function (a) { return a.session_id === s.session_id && a.student_id === user.user_id; })[0];
     if (existing && (existing.status === 'P' || existing.status === 'L')) return { ok: true, already: true, session: s };
+    if (existing && existing.status === 'E') fail('excused', 'This class is already recorded as Absent with reason (approved claim). Ask your lecturer if it needs correcting.', 'Kelas ini telah direkod sebagai Tidak Hadir Bersebab (tuntutan diluluskan). Rujuk pensyarah jika perlu dibetulkan.');
     var row = { session_id: s.session_id, student_id: user.user_id, status: 'P', marked_by: user.user_id + ' (QR)', marked_at: iso(db.now()) };
     if (existing) db.update('Attendance', function (a) { return a.session_id === s.session_id && a.student_id === user.user_id; }, row);
     else db.insert('Attendance', row);
@@ -334,25 +369,29 @@ var MyPdPCore = (function () {
 
   H.bookSlot = function (db, user, p) {
     role(user, ['student']);
-    need(p, ['slot_id', 'purpose']);
+    need(p, ['slot_id', 'class_id', 'purpose']);
     var s = byKey(db.all('Slots'), 'slot_id')[p.slot_id];
     if (!s || s.status !== 'Open') fail('taken', 'Sorry, this slot was just taken. Choose another.', 'Maaf, slot ini telah ditempah. Pilih slot lain.');
+    // the consultation is about one specific class taught by this lecturer
+    var bc = studentClasses(db, user.user_id).filter(function (c) { return c.class_id === p.class_id && c.lecturer_id === s.lecturer_id; })[0];
+    if (!bc) fail('class', 'Choose one of your classes taught by this lecturer.', 'Pilih kelas anda yang diajar oleh pensyarah ini.');
     var clash = H.myBookings(db, user).filter(function (b) { return (b.status === 'Pending' || b.status === 'Confirmed') && b.date === s.date && b.start === s.start; });
     if (clash.length) fail('clash', 'You already have a booking at this time.', 'Anda sudah ada temujanji pada masa ini.');
     db.update('Slots', function (x) { return x.slot_id === s.slot_id; }, { status: 'Booked' });
     var id = newId(db, 'Bookings', 'booking_id', 'B');
     var now = iso(db.now());
-    db.insert('Bookings', { booking_id: id, slot_id: s.slot_id, student_id: user.user_id, lecturer_id: s.lecturer_id, purpose: clean(p.purpose, 300),
+    db.insert('Bookings', { booking_id: id, slot_id: s.slot_id, student_id: user.user_id, lecturer_id: s.lecturer_id, class_id: bc.class_id, purpose: clean(p.purpose, 300),
       status: 'Pending', notes: '', created_at: now, updated_at: now });
     notify(db, s.lecturer_id, 'New consultation request from ' + user.name + ' on ' + s.date + ' ' + s.start + '.',
       'Permohonan konsultasi baharu daripada ' + user.name + ' pada ' + s.date + ' ' + s.start + '.', 'consult');
     return { ok: true, booking_id: id };
   };
 
+  function classLabel(db, id) { var c = byKey(db.all('Classes'), 'class_id')[id]; return c ? c.course_code + ' · ' + c.class_name : ''; }
   function bookingView(db, b, slotMap) {
     var s = slotMap[b.slot_id] || {};
     return { booking_id: b.booking_id, slot_id: b.slot_id, student_id: b.student_id, student_name: userName(db, b.student_id),
-      lecturer_id: b.lecturer_id, lecturer: userName(db, b.lecturer_id), date: s.date, start: s.start, end: s.end, mode: s.mode, location: s.location,
+      lecturer_id: b.lecturer_id, lecturer: userName(db, b.lecturer_id), class_id: b.class_id || '', course: classLabel(db, b.class_id), date: s.date, start: s.start, end: s.end, mode: s.mode, location: s.location,
       purpose: b.purpose, status: b.status, notes: b.notes, created_at: b.created_at };
   }
   H.myBookings = function (db, user) {
@@ -410,7 +449,14 @@ var MyPdPCore = (function () {
 
   H.myClasses = function (db, user) {
     role(user, ['lecturer', 'admin']);
-    return lecturerClasses(db, user).map(function (c) { var x = JSON.parse(JSON.stringify(c)); x.students = enrolled(db, c.class_id).length; return x; });
+    var cfg = settings(db), cache = cacheAll(db);
+    return lecturerClasses(db, user).map(function (c) {
+      var x = JSON.parse(JSON.stringify(c)), st = enrolled(db, c.class_id), risky = 0, att = 0;
+      st.forEach(function (s) { var sm = studentSummary(db, s, c, cfg, cache); att += sm.attendance.percent; if (sm.risk.level === 'red' || sm.risk.level === 'orange') risky++; });
+      x.students = st.length; x.attendance = st.length ? Math.round(att / st.length * 10) / 10 : 0; x.atRisk = risky;
+      x.lecturer_programme = (byKey(db.all('Users'), 'user_id')[c.lecturer_id] || {}).programme || '';
+      return x;
+    });
   };
 
   H.classStudents = function (db, user, p) {
@@ -441,7 +487,7 @@ var MyPdPCore = (function () {
     db.all('Claims').filter(function (x) { return x.student_id === p.student_id && x.class_id === c.class_id; })
       .forEach(function (x) { ev.push({ date: x.submitted_at.slice(0, 10), kind: 'claim', status: x.status, text: x.reason_type + (x.note ? ': ' + x.note : '') }); });
     var sm = byKey(db.all('Slots'), 'slot_id');
-    db.all('Bookings').filter(function (b) { return b.student_id === p.student_id && b.lecturer_id === c.lecturer_id; })
+    db.all('Bookings').filter(function (b) { return b.student_id === p.student_id && (b.class_id ? b.class_id === c.class_id : b.lecturer_id === c.lecturer_id); })
       .forEach(function (b) { var s = sm[b.slot_id] || {}; ev.push({ date: s.date || b.created_at.slice(0, 10), kind: 'consult', status: b.status, text: b.purpose + (b.notes ? ' — ' + b.notes : '') }); });
     db.all('Interventions').filter(function (x) { return x.student_id === p.student_id && x.class_id === c.class_id; })
       .forEach(function (x) { ev.push({ date: x.date, kind: 'intervention', text: x.action + (x.notes ? ' — ' + x.notes : ''), by: userName(db, x.lecturer_id) }); });
@@ -453,6 +499,7 @@ var MyPdPCore = (function () {
     role(user, ['lecturer', 'admin']);
     need(p, ['class_id', 'student_id', 'action']);
     ownClass(db, user, p.class_id);
+    if (enrolled(db, p.class_id).indexOf(p.student_id) < 0) fail('forbidden', 'This student is not enrolled in the selected class.', 'Pelajar ini tidak berdaftar dalam kelas yang dipilih.');
     var id = newId(db, 'Interventions', 'intervention_id', 'I');
     db.insert('Interventions', { intervention_id: id, student_id: p.student_id, class_id: p.class_id, lecturer_id: user.user_id,
       date: p.date || today(db), action: clean(p.action, 100), notes: clean(p.notes, 500) });
@@ -518,10 +565,12 @@ var MyPdPCore = (function () {
       if (roster.indexOf(m.student_id) < 0 || ['P', 'L', 'A', 'E'].indexOf(m.status) < 0) return;
       var old = current[m.student_id];
       if (old && old.status === m.status) return;
-      var row = { session_id: s.session_id, student_id: m.student_id, status: m.status, marked_by: user.user_id, marked_at: iso(db.now()) };
+      var why = clean(p.reason, 300);
+      if (old && old.status === 'E' && !why) fail('reason', 'Changing an approved absence (E) needs a written reason.', 'Menukar Tidak Hadir Bersebab (E) memerlukan sebab bertulis.');
+      var row = { session_id: s.session_id, student_id: m.student_id, status: m.status, marked_by: user.user_id + (old && old.status === 'E' ? ' (correction)' : ''), marked_at: iso(db.now()) };
       if (old) db.update('Attendance', function (a) { return a.session_id === s.session_id && a.student_id === m.student_id; }, row);
       else db.insert('Attendance', row);
-      audit(db, user, 'attendance', s.session_id + '/' + m.student_id, old ? old.status : '', m.status);
+      audit(db, user, old && old.status === 'E' ? 'attendance_correction' : 'attendance', s.session_id + '/' + m.student_id, old ? old.status : '', m.status + (old && old.status === 'E' ? ' | reason: ' + why : ''));
       changed++;
     });
     return { ok: true, changed: changed };
@@ -571,8 +620,8 @@ var MyPdPCore = (function () {
     return db.all('Tasks').filter(function (t) { return t.class_id === c.class_id; }).map(function (t) {
       var s = subs.filter(function (x) { return x.task_id === t.task_id; });
       return { task_id: t.task_id, title: t.title, type: t.type, due_at: t.due_at, max_marks: num(t.max_marks), description: t.description,
-        submitted: s.length, graded: s.filter(function (x) { return x.marks !== ''; }).length, students: n };
-    }).sort(function (a, b) { return a.due_at < b.due_at ? 1 : -1; });
+        submitted: s.length, graded: s.filter(function (x) { return x.marks !== ''; }).length, students: n, seq: num(t.seq) || 0 };
+    }).sort(bySeq);
   };
 
   H.createTask = function (db, user, p) {
@@ -581,7 +630,8 @@ var MyPdPCore = (function () {
     var c = ownClass(db, user, p.class_id);
     if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(p.due_at)) fail('format', 'Check the due date.', 'Semak tarikh akhir.');
     var id = newId(db, 'Tasks', 'task_id', 'T');
-    db.insert('Tasks', { task_id: id, class_id: c.class_id, title: clean(p.title, 150), type: clean(p.type || 'Assignment', 30), description: clean(p.description, 1000),
+    var seq = num(p.seq) || (db.all('Tasks').filter(function (t) { return t.class_id === c.class_id; }).reduce(function (m, t) { return Math.max(m, num(t.seq)); }, 0) + 1);
+    db.insert('Tasks', { task_id: id, class_id: c.class_id, seq: String(seq), title: clean(p.title, 150), type: clean(p.type || 'Assignment', 30), description: clean(p.description, 1000),
       due_at: p.due_at, max_marks: String(num(p.max_marks)), created_at: iso(db.now()) });
     enrolled(db, c.class_id).forEach(function (s) {
       notify(db, s, 'New task in ' + c.course_code + ': ' + clean(p.title, 80) + ' (due ' + p.due_at.replace('T', ' ') + ').',
@@ -682,8 +732,9 @@ var MyPdPCore = (function () {
     notify(db, b.student_id, msg[0], msg[1], 'consult');
     if (p.decision === 'Completed') {
       // Integration: completed consultation => intervention log (evidence of follow-up)
-      var cls = studentClasses(db, b.student_id).filter(function (c) { return c.lecturer_id === user.user_id; })[0];
-      db.insert('Interventions', { intervention_id: newId(db, 'Interventions', 'intervention_id', 'I'), student_id: b.student_id, class_id: cls ? cls.class_id : '',
+      // use the class the student chose when booking; older bookings fall back to the first shared class
+      var cid = b.class_id || ((studentClasses(db, b.student_id).filter(function (c) { return c.lecturer_id === user.user_id; })[0] || {}).class_id || '');
+      db.insert('Interventions', { intervention_id: newId(db, 'Interventions', 'intervention_id', 'I'), student_id: b.student_id, class_id: cid,
         lecturer_id: user.user_id, date: s.date || today(db), action: 'Consultation', notes: clean(b.purpose, 200) + (p.notes ? ' | ' + clean(p.notes, 300) : '') });
     }
     return { ok: true };
@@ -706,7 +757,7 @@ var MyPdPCore = (function () {
       return { filename: c.course_code + '_' + c.class_name + '_attendance.csv', header: header, rows: rows };
     }
     if (p.kind === 'submissions') {
-      var tasks = cache.tasks.filter(function (t) { return t.class_id === c.class_id; }).sort(function (a, b) { return a.due_at < b.due_at ? -1 : 1; });
+      var tasks = cache.tasks.filter(function (t) { return t.class_id === c.class_id; }).sort(bySeq);
       var h2 = ['Student ID', 'Name'];
       tasks.forEach(function (t) { h2.push(t.title + ' status', t.title + ' marks /' + t.max_marks); });
       var r2 = students.map(function (id) {
@@ -736,6 +787,8 @@ var MyPdPCore = (function () {
   function handle(db, user, action, payload) {
     if (!H[action]) fail('action', 'Unknown action: ' + action, 'Tindakan tidak dikenali: ' + action);
     if (!PUBLIC[action] && !user) fail('auth', 'Please log in again.', 'Sila log masuk semula.');
+    if (user && truthy(user.must_change_pin) && ['me', 'changePin'].indexOf(action) < 0)
+      fail('pinchange', 'Please set your own PIN before continuing.', 'Sila tetapkan PIN anda sendiri sebelum meneruskan.');
     return H[action](db, user, payload || {});
   }
 
