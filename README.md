@@ -1,5 +1,8 @@
 # MyPdP Insight – Demo UI update
 
+## Hero assets restored (1.1.4)
+The welcome hero image and animated flip cards already work on the live page. `config.js` previously left `bannerLecturer` and `bannerStudent` empty, so the dashboard greeting banners showed only their gradients. Both slots now point to the included `images/banner-lecturer.png` and `images/banner-student.png`. The images remain confined to greeting banners; the original layout and navigation colours are unchanged. `index.html` loads a fresh configuration version to avoid stale browser caching.
+
 ## Class-focused dashboards and reports (1.1.3)
 Lecturer Dashboard now groups classes by course. Choose a class to see only its attendance chart, students needing attention, deadlines, and quick links for attendance, marking, and reports. Repeated global metric tiles have been removed. Attendance, Tasks, and Lecturer Reports show a clear selected-class banner, and their class picker groups options under course names.
 

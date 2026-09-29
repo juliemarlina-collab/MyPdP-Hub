@@ -10,8 +10,8 @@ window.MYPDP_CONFIG = {
   USE_IMAGES: true,
   IMAGES: {
     hero:           'images/hero.png',            // Login / welcome sky header (16:9, 2400×1350)
-    bannerLecturer: '', // Keep the existing gradient for the demo; set to 'images/banner-lecturer.png' later
-    bannerStudent:  '', // Keep the existing gradient for the demo; set to 'images/banner-student.png' later
+    bannerLecturer: 'images/banner-lecturer.png', // Lecturer dashboard greeting banner
+    bannerStudent:  'images/banner-student.png',  // Student dashboard greeting banner
     coverBahasa:      'images/cover-bahasa.png',            // My Courses tile – Bahasa & Komunikasi (1:1, 800×800)
     coverPengajianAm: 'images/cover-pengajian-am.png',      // My Courses tile – Pengajian Am
     coverMatSains:    'images/cover-matematik-sains.png',   // My Courses tile – Matematik & Sains
