@@ -170,6 +170,38 @@
     var img = IMG[key] ? '<span class="imgslot cvimg"><img src="' + esc(IMG[key]) + '" alt="" decoding="async"></span>' : '';
     return '<div class="cover ' + k[0] + (big ? ' big' : '') + '" aria-hidden="true">' + img + '<span class="cv-ico">' + ic(k[1]) + '</span><span class="cv-code">' + esc(code) + '</span><i class="cv-ring"></i><i class="cv-ring r2"></i></div>';
   }
+  // ---------- visual identity: each COURSE keeps one colour everywhere; STUDENTS, LECTURERS and ADMIN have different avatars ----------
+  var THEMES = ['th-blue', 'th-lime', 'th-night', 'th-peri', 'th-sky'];
+  var themeMap = {};
+  try { themeMap = JSON.parse(sget('mypdp_course_theme') || '{}') || {}; } catch (e) { themeMap = {}; }
+  function courseTheme(code) {
+    code = String(code || '').toUpperCase();
+    if (!(code in themeMap)) { themeMap[code] = Object.keys(themeMap).length % THEMES.length; sset('mypdp_course_theme', JSON.stringify(themeMap)); }
+    return THEMES[themeMap[code]];
+  }
+  function themeCourses(codes) { codes.slice().sort().forEach(courseTheme); }   // stable order: A→Z the first time a list is seen
+  function ctag(code, extra) { return '<span class="ctag ' + courseTheme(code) + '">' + esc(code) + (extra ? '<i>' + esc(extra) + '</i>' : '') + '</span>'; }
+  function num2(n) { return (n < 10 ? '0' : '') + n; }
+  /** coloured course header (template style): number tag, code, course name, class chip, optional right-hand content */
+  function courseHead(c, n, right, tag) {
+    return '<div class="chead ' + courseTheme(c.course_code) + '">' + '<svg class="chead-sw" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true"><path d="M-10 110 C 90 20, 200 140, 300 50 S 420 10, 430 40"/></svg>' +
+      (n ? '<span class="chead-n">' + num2(n) + '</span>' : '') +
+      '<div class="chead-main"><div class="chead-code">' + esc(c.course_code) + (c.class_name ? '<span class="chead-class">' + ic('users') + esc(c.class_name) + '</span>' : '') + '</div>' +
+      '<' + (tag || 'h2') + ' class="chead-title">' + esc(c.course_name || '') + '</' + (tag || 'h2') + '>' + (c.sub ? '<div class="chead-sub">' + c.sub + '</div>' : '') + '</div>' +
+      (right ? '<div class="chead-right">' + right + '</div>' : '') + '</div>';
+  }
+  function avatar(name, role, cls) { return '<span class="avatar av-' + esc(role || 'student') + (cls ? ' ' + cls : '') + '">' + esc(initials(name)) + '</span>'; }
+  function personChip(name, role, sub) {
+    return '<span class="pchip pchip-' + esc(role) + '">' + avatar(name, role) + '<span><strong>' + esc(name) + '</strong><small>' + esc(sub || t(role)) + '</small></span></span>';
+  }
+  function secEyebrow(n, text) { return '<div class="eyebrow eb-num"><b>' + num2(n) + '</b>' + esc(text) + '</div>'; }
+  /** quick links to each course block on long pages */
+  function courseJump(items) {
+    if (items.length < 2) return '';
+    return '<nav class="cjump" aria-label="' + esc(t('myCourses')) + '">' + items.map(function (x, i) {
+      return '<a href="#" data-act="scrollto" data-v="crs-' + esc(x.id) + '" class="cj ' + courseTheme(x.code) + (x.low ? ' low' : '') + '"><span class="cj-n">' + num2(i + 1) + '</span><b>' + esc(x.code) + '</b>' + (x.value ? '<span class="cj-v">' + esc(x.value) + '</span>' : '') + '</a>';
+    }).join('') + '</nav>';
+  }
   function ic(n) { return '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[n] || '') + '</svg>'; }
   function ring(pct, thr, label) {
     var r = 38, c = 2 * Math.PI * r, p = Math.max(0, Math.min(100, pct)), off = c * (1 - p / 100);
@@ -295,13 +327,13 @@
       '<main class="main" id="main"><div class="topbar"><span class="crumb">MyPdP / ' + esc(t(cur[2])) + '</span><span class="portal-chip">' + esc(t(S.user.role + 'Portal')) + '</span>' + (LIVE ? '' : '<span class="demo-chip">' + esc(t('demoMode')) + '</span>') +
       '<div class="spacer"></div>' + langToggle() +
       '<button class="iconbtn" data-act="nav" data-v="#/notifications" aria-label="' + esc(t('nNotif')) + '">' + ic('bell') + (S.unread ? '<span class="dot">' + S.unread + '</span>' : '') + '</button>' +
-      '<div class="usermenu"><button data-act="usermenu" aria-haspopup="true"><span class="avatar">' + esc(initials(S.user.name)) + '</span><span class="uname">' + esc(S.user.name) + '</span></button>' +
+      '<div class="usermenu"><button data-act="usermenu" aria-haspopup="true">' + avatar(S.user.name, S.user.role) + '<span class="uname">' + esc(S.user.name) + '</span></button>' +
       '<div class="dropdown hidden" id="umenu"><div class="small muted" style="padding:6px 10px">' + esc(S.user.user_id) + ' · ' + esc(t(S.user.role)) + '</div>' +
       '<button data-act="changepin">' + ic('key') + esc(t('changePin')) + '</button>' + (LIVE ? '' : '<button data-act="demoreset">' + ic('reset') + esc(t('demoReset')) + '</button>') +
       '<button data-act="logout">' + ic('logout') + esc(t('logout')) + '</button></div></div></div>' +
       '<div class="anim" id="page">' + content + '</div>' + siteFooter() + '</main>' +
       '<div class="more-bg hidden" id="morebg" data-act="moremenu"></div><div class="more-sheet hidden" id="moresheet" role="menu" aria-label="' + esc(t('moreMenu')) + '">' +
-      '<div class="ms-user"><span class="avatar">' + esc(initials(S.user.name)) + '</span><div><strong>' + esc(S.user.name) + '</strong><small>' + esc(S.user.user_id) + ' · ' + esc(t(S.user.role)) + '</small></div></div>' +
+      '<div class="ms-user">' + avatar(S.user.name, S.user.role) + '<div><strong>' + esc(S.user.name) + '</strong><small>' + esc(S.user.user_id) + ' · ' + esc(t(S.user.role)) + '</small></div></div>' +
       '<div class="ms-grid">' + extras.map(function (n) { return '<a role="menuitem" href="#/' + n[0] + '"' + (active === n[0] ? ' class="active"' : '') + '>' + n[1] + '<span>' + esc(t(n[2])) + '</span>' + (n[0] === 'notifications' && S.unread ? '<span class="count">' + S.unread + '</span>' : '') + '</a>'; }).join('') +
       '<a role="menuitem" href="#/about"' + (active === 'about' ? ' class="active"' : '') + '>' + ic('info') + '<span>' + esc(t('aboutNav')) + '</span></a></div>' +
       '<div class="ms-actions"><button role="menuitem" data-act="changepin">' + ic('key') + esc(t('changePin')) + '</button>' + (LIVE ? '' : '<button role="menuitem" data-act="demoreset">' + ic('reset') + esc(t('demoReset')) + '</button>') +
@@ -375,7 +407,7 @@
       var ids = portalChoice === 'student' ? ['S003', 'S005', 'S051'] : portalChoice === 'lecturer' ? ['L004', 'L002', 'L003'] : ['A001'];
       var users = demoDb.all('Users').filter(function (u) { return ids.indexOf(u.user_id) >= 0; });
       demo = '<div class="card" style="margin-top:16px"><div class="eyebrow">' + esc(t(portalChoice === 'student' ? 'demoStudents' : portalChoice === 'lecturer' ? 'demoLecturers' : 'demoAdmin')) + ' · PIN 1234</div><p class="small muted" style="margin:6px 0 10px">' + esc(t('demoNote')) + '</p><div class="demo-users">' + users.map(function (u) {
-        return '<button data-act="demologin" data-v="' + u.user_id + '"><span class="avatar">' + esc(initials(u.name)) + '</span><span><strong>' + esc(u.name) + '</strong><br><span class="muted small">' + esc(u.user_id) + ' · ' + esc(t(u.role)) + '</span></span></button>';
+        return '<button data-act="demologin" data-v="' + u.user_id + '">' + avatar(u.name, u.role) + '<span><strong>' + esc(u.name) + '</strong><br><span class="muted small">' + esc(u.user_id) + ' · ' + esc(t(u.role)) + '</span></span></button>';
       }).join('') + '</div></div>';
     }
     var bars = function (arr, cls) { return '<div class="hc-bars ' + (cls || '') + '">' + arr.map(function (h) { return '<i style="height:' + h + '%"></i>'; }).join('') + '</div>'; };
@@ -466,11 +498,12 @@
         (worst === 'orange' || worst === 'red' ? '<a href="#/consult">' + ic('chat') + esc(t('bookSlot')) + arw() + '</a>' : '') + '</div></section>';
       html += '<div class="grid g4 anim" style="margin-bottom:18px">' + tile('t-lime', d.upcoming.length, t('dueSoon'), '#/tasks') + tile('t-night', d.missing.length, t('missingWork'), '#/tasks') +
         tile('t-brand', d.pendingClaims, t('claimsPendingShort'), '#/claims') + tile('t-white', d.bookings.length, t('upcomingConsult'), '#/consult') + '</div>';
-      html += '<h2>' + ic('users') + esc(t('yourClasses')) + '</h2><div class="grid g3 anim">' + d.classes.map(function (c) {
-        return '<div class="card classcard lift"><div class="top"><div><strong>' + esc(c.course_code) + '</strong> · ' + esc(c.class_name) + '<div class="small muted">' + esc(c.course_name) + '</div></div>' + riskBadge(c.risk.level, true) + '</div>' +
+      themeCourses(d.classes.map(function (c) { return c.course_code; }));
+      html += '<div class="section-heading">' + '<div>' + secEyebrow(1, t('yourClasses')) + '<h2>' + esc(t('yourClasses')) + '</h2></div></div><div class="grid g3 anim">' + d.classes.map(function (c, i) {
+        return '<div class="card classcard themed lift">' + courseHead({ course_code: c.course_code, course_name: c.course_name, class_name: c.class_name }, i + 1, '', 'h3') + '<div class="cc-risk">' + riskBadge(c.risk.level, true) + '</div>' +
           '<div class="ringrow">' + ring(c.attendance.percent, d.threshold, t('attendance')) + '<div><div class="small muted">' + esc(t('threshold')) + ': ' + d.threshold + '%</div>' +
           (c.risk.reasons.length ? '<div class="small">' + reasonText(c.risk.reasons) + '</div>' : '<div class="small">' + esc(t('sRiskGreen')) + '</div>') +
-          '<div class="small muted">' + esc(t('lecturerName')) + ': ' + esc(c.lecturer) + '</div></div></div></div>';
+          '</div></div>' + personChip(c.lecturer, 'lecturer', t('lecturerName')) + '</div>';
       }).join('') + '</div>';
       html += '<div class="grid split" style="margin-top:18px"><div class="card"><h2>' + ic('tasks') + esc(t('dueSoon')) + '</h2>' +
         (d.missing.length ? '<div class="alert alert-red small">' + ic('alert') + '<span><strong>' + esc(t('missingWork')) + ':</strong> ' + d.missing.map(function (x) { return esc(x.title) + ' (' + esc(x.course_code) + ')'; }).join(', ') + '</span></div>' : '') +
@@ -489,17 +522,20 @@
     return api('myAttendance').then(function (d) {
       var html = '<div class="pagehead"><h1>' + esc(t('nAttendance')) + '</h1><a class="btn btn-ghost" href="#/claims">' + ic('med') + ' ' + esc(t('claimThis')) + '</a></div>';
       html += '<div class="alert alert-blue small"><strong>' + esc(t('formula')) + ':</strong> ' + esc(t('formulaText')) + ' ' + (d.lateOk ? esc(t('formulaLate')) + ' ' : '') + (d.excusedOut ? esc(t('formulaExcused')) : '') + ' ' + esc(t('threshold')) + ': ' + d.threshold + '%.</div>';
-      d.classes.forEach(function (c) {
-        var a = c.attendance;
-        html += '<div class="card"><div class="pagehead" style="margin-bottom:8px"><div><h2 style="margin:0">' + esc(c.course_code) + ' · ' + esc(c.class_name) + '</h2><div class="small muted">' + esc(c.course_name) + '</div></div>' +
-          '<div style="min-width:200px"><div class="kv"><span>' + esc(t('attendance')) + '</span><strong>' + a.percent + '%</strong></div>' + meter(a.percent, d.threshold) + '</div></div>' +
-          (a.percent < d.threshold && a.counted ? '<div class="alert alert-red small">' + esc(t('belowLimit')) + '</div>' : '') +
-          '<div class="small muted" style="margin-bottom:8px">' + esc(t('attP')) + ': ' + (a.attended - (d.lateOk ? a.late : 0)) + ' · ' + esc(t('attL')) + ': ' + a.late + ' · ' + esc(t('attA')) + ': ' + a.absent + ' · ' + esc(t('attE')) + ': ' + a.excused + '</div>' +
+      themeCourses(d.classes.map(function (c) { return c.course_code; }));
+      html += courseJump(d.classes.map(function (c) { return { id: c.class_id, code: c.course_code, value: c.attendance.percent + '%', low: c.attendance.counted && c.attendance.percent < d.threshold }; }));
+      d.classes.forEach(function (c, i) {
+        var a = c.attendance, low = a.percent < d.threshold && a.counted;
+        html += '<section class="cblock" id="crs-' + esc(c.class_id) + '">' + courseHead(c, i + 1, '<div class="chead-big' + (low ? ' low' : '') + '"><small>' + esc(t('attendance')) + '</small><b>' + a.percent + '%</b></div>') +
+          '<div class="card cbody">' +
+          '<div class="stat-chips"><span class="sc sc-P">' + esc(t('attP')) + ' <b>' + (a.attended - (d.lateOk ? a.late : 0)) + '</b></span><span class="sc sc-L">' + esc(t('attL')) + ' <b>' + a.late + '</b></span><span class="sc sc-A">' + esc(t('attA')) + ' <b>' + a.absent + '</b></span><span class="sc sc-E">' + esc(t('attE')) + ' <b>' + a.excused + '</b></span></div>' +
+          '<div style="margin:4px 0 12px">' + meter(a.percent, d.threshold) + '</div>' +
+          (low ? '<div class="alert alert-red small">' + esc(t('belowLimit')) + '</div>' : '') +
           '<div class="tablewrap"><table><thead><tr><th>' + esc(t('date')) + '</th><th>' + esc(t('topic')) + '</th><th>' + esc(t('status')) + '</th><th></th></tr></thead><tbody>' +
           a.sessions.map(function (s) {
             return '<tr><td class="nowrap">' + fdate(s.date, true) + '<div class="small muted">' + esc(s.start) + '–' + esc(s.end) + '</div></td><td>' + esc(s.topic) + '</td><td>' + attBadge(s.status) + '</td><td class="right">' +
               (s.status === 'A' ? '<a class="btn btn-ghost btn-sm" href="#/claims?c=' + c.class_id + '&s=' + s.session_id + '">' + esc(t('claimThis')) + '</a>' : '') + '</td></tr>';
-          }).join('') + '</tbody></table></div></div>';
+          }).join('') + '</tbody></table></div></div></section>';
       });
       return html;
     });
@@ -534,15 +570,18 @@
   S_PAGES.tasks = function () {
     return api('myTasks').then(function (classes) {
       var html = '<div class="pagehead"><h1>' + esc(t('nTasks')) + '</h1></div><div class="spot"><div>' + illu('tasks') + '</div><p>' + esc(t('tasksIntro')) + '</p></div>';
-      classes.forEach(function (c) {
-        html += '<div class="card"><h2>' + esc(c.course_code) + ' · ' + esc(c.class_name) + ' <span class="small muted">' + esc(c.course_name) + '</span></h2>' + (c.tasks.length ? '<div class="tablewrap"><table><thead><tr><th>' + esc(t('taskTitle')) + '</th><th>' + esc(t('due')) + '</th><th>' + esc(t('status')) + '</th><th>' + esc(t('marks')) + '</th><th></th></tr></thead><tbody>' +
+      themeCourses(classes.map(function (c) { return c.course_code; }));
+      html += courseJump(classes.map(function (c) { var m = c.tasks.filter(function (x) { return x.status === 'Missing'; }).length; return { id: c.class_id, code: c.course_code, value: m ? m + ' ' + t('tMissing').toLowerCase() : c.tasks.length + '', low: !!m }; }));
+      classes.forEach(function (c, i) {
+        var miss = c.tasks.filter(function (x) { return x.status === 'Missing'; }).length;
+        html += '<section class="cblock" id="crs-' + esc(c.class_id) + '">' + courseHead(c, i + 1, '<div class="chead-big' + (miss ? ' low' : '') + '"><small>' + esc(t('nTasks')) + '</small><b>' + c.tasks.length + '</b>' + (miss ? '<em>' + miss + ' ' + esc(t('tMissing').toLowerCase()) + '</em>' : '') + '</div>') + '<div class="card cbody">' + (c.tasks.length ? '<div class="tablewrap"><table><thead><tr><th>' + esc(t('taskTitle')) + '</th><th>' + esc(t('due')) + '</th><th>' + esc(t('status')) + '</th><th>' + esc(t('marks')) + '</th><th></th></tr></thead><tbody>' +
           c.tasks.map(function (x) {
             var canSubmit = x.status !== 'Graded';
             return '<tr><td><strong>' + esc(x.title) + '</strong><div class="small muted">' + esc(typeLabel(x.type)) + (x.description ? ' · ' + esc(x.description) : '') + '</div>' + (x.feedback ? '<div class="small">' + ic('chat') + ' ' + esc(x.feedback) + '</div>' : '') + '</td>' +
               '<td class="nowrap">' + fdt(x.due_at) + '</td><td>' + taskBadge(x.status) + (x.submitted_at ? '<div class="small muted">' + fdt(x.submitted_at) + '</div>' : '') + '</td>' +
               '<td>' + (x.marks !== null ? '<strong>' + x.marks + '</strong>/' + x.max_marks : '<span class="muted">/' + x.max_marks + '</span>') + '</td>' +
               '<td class="right">' + (canSubmit ? '<button class="btn btn-' + (x.submitted_at ? 'ghost' : 'primary') + ' btn-sm" data-act="submitwork" data-v="' + x.task_id + '" data-title="' + esc(x.title) + '">' + esc(x.submitted_at ? t('resubmit') : t('submit')) + '</button>' : '') + '</td></tr>';
-          }).join('') + '</tbody></table></div>' : '<div class="empty">' + esc(t('noTasks')) + '</div>') + '</div>';
+          }).join('') + '</tbody></table></div>' : '<div class="empty">' + esc(t('noTasks')) + '</div>') + '</div></section>';
       });
       return html;
     });
@@ -552,10 +591,11 @@
     return Promise.all([api('myTasks'), api('studentDashboard')]).then(function (res) {
       var risk = {}; res[1].classes.forEach(function (c) { risk[c.class_id] = c.risk; });
       var html = '<div class="pagehead"><h1>' + esc(t('nMarks')) + '</h1></div><div class="grid g3 anim marks-grid">';
-      res[0].forEach(function (c) {
+      themeCourses(res[0].map(function (c) { return c.course_code; }));
+      res[0].forEach(function (c, i) {
         var graded = c.tasks.filter(function (x) { return x.marks !== null; });
         var rk = risk[c.class_id] || {};
-        html += '<div class="card"><div class="classcard"><div class="top"><div><strong>' + esc(c.course_code) + '</strong> · ' + esc(c.class_name) + '<div class="small muted">' + esc(c.course_name) + '</div></div></div><div class="small muted" style="margin:8px 0">' + esc(t('overallClassStatus')) + ': ' + riskBadge(rk.level, true) + '</div>' +
+        html += '<div class="card themed"><div class="classcard">' + courseHead(c, i + 1, '', 'h3') + '<div class="small muted" style="margin:8px 0">' + esc(t('overallClassStatus')) + ': ' + riskBadge(rk.level, true) + '</div>' +
           '<div class="kv"><span>' + esc(t('average')) + '</span><strong>' + (rk.average === null || rk.average === undefined ? '—' : rk.average + '%') + '</strong></div>' +
           '<h3 style="margin-top:6px">' + esc(t('progress')) + '</h3>' + (graded.length ? graded.map(function (x) {
             var p = Math.round(x.marks / x.max_marks * 100);
@@ -573,7 +613,7 @@
       var slots = res[0], mine = res[1]; myClassList = res[2].classes;
       var html = '<div class="pagehead"><h1>' + esc(t('nConsult')) + '</h1></div><div class="spot"><div>' + illu('consult') + '</div><p>' + esc(t('consultPrompt')) + '</p></div><div class="grid g2 anim"><div class="card"><h2>' + esc(t('openSlots')) + '</h2>' +
         (slots.length ? '<ul class="list">' + slots.map(function (s) {
-          return '<li><div><strong>' + fdate(s.date, true) + '</strong> · ' + esc(s.start) + '–' + esc(s.end) + '<div class="small muted">' + esc(s.lecturer) + ' · ' + esc(s.mode === 'Online' ? t('online') : t('inPerson')) + ' · ' + esc(s.location) + '</div></div>' +
+          return '<li><div><strong>' + fdate(s.date, true) + '</strong> · ' + esc(s.start) + '–' + esc(s.end) + '<div class="small muted">' + personChip(s.lecturer, 'lecturer', (s.mode === 'Online' ? t('online') : t('inPerson')) + (s.location ? ' · ' + s.location : '')) + '</div></div>' +
             '<button class="btn btn-primary btn-sm" data-act="book" data-v="' + s.slot_id + '" data-lec="' + s.lecturer_id + '" data-label="' + esc(fdate(s.date) + ' ' + s.start + ' · ' + s.lecturer) + '">' + esc(t('bookSlot')) + '</button></li>';
         }).join('') + '</ul>' : '<div class="empty">' + esc(t('noSlots')) + '</div>') + '</div>' +
         '<div class="card"><h2>' + esc(t('myBookings')) + '</h2>' + (mine.length ? '<ul class="list">' + mine.map(function (b) {
@@ -621,16 +661,17 @@
   }
 
   function classContext(c) {
-    return '<div class="class-context"><span class="course-code">' + esc(c.course_code) + '</span><div><strong>' + esc(c.class_name) + '</strong><span>' + esc(c.course_name) + '</span></div></div>';
+    return '<div class="class-context ' + courseTheme(c.course_code) + '">' + ctag(c.course_code) + '<div><strong>' + ic('users') + ' ' + esc(c.class_name) + '</strong><span>' + esc(c.course_name) + '</span></div></div>';
   }
 
   function classSwitcher(classes, current, base) {
     var groups = {};
     classes.forEach(function (c) { (groups[c.course_code] = groups[c.course_code] || []).push(c); });
-    return '<div class="course-switcher">' + Object.keys(groups).sort().map(function (code) {
+    themeCourses(Object.keys(groups));
+    return '<div class="course-switcher">' + Object.keys(groups).sort().map(function (code, gi) {
       var list = groups[code];
-      return '<section class="course-group"><div class="course-group-title"><span class="course-code">' + esc(code) + '</span><div><strong>' + esc(list[0].course_name) + '</strong><small>' + list.length + ' ' + esc(t('classesWord')) + '</small></div></div><div class="class-switches">' + list.map(function (c) {
-        return '<a class="class-switch' + (c.class_id === current ? ' selected' : '') + '" href="' + base + encodeURIComponent(c.class_id) + '"' + (c.class_id === current ? ' aria-current="true"' : '') + '><strong>' + esc(c.class_name) + '</strong><small>' + esc(c.course_code) + ' · ' + c.students + ' ' + esc(t('students').toLowerCase()) + '</small></a>';
+      return '<section class="course-group ' + courseTheme(code) + '"><div class="course-group-title"><span class="cg-n">' + num2(gi + 1) + '</span><div><span class="cg-code">' + esc(code) + '</span><strong>' + esc(list[0].course_name) + '</strong><small>' + ic('users') + ' ' + list.length + ' ' + esc(t('classesWord')) + '</small></div></div><div class="class-switches">' + list.map(function (c) {
+        return '<a class="class-switch' + (c.class_id === current ? ' selected' : '') + '" href="' + base + encodeURIComponent(c.class_id) + '"' + (c.class_id === current ? ' aria-current="true"' : '') + '><strong>' + ic('users') + ' ' + esc(c.class_name) + '</strong><small>' + c.students + ' ' + esc(t('students').toLowerCase()) + ' · ' + c.attendance + '%</small></a>';
       }).join('') + '</div></section>';
     }).join('') + '</div>';
   }
@@ -652,16 +693,17 @@
         '<div class="hero-float"><div class="chip-card" style="--i:0"><div class="k">' + esc(t('avgAttendance')) + '</div><div class="v">' + cnt(avgAtt, '%') + '</div></div>' +
         '<div class="chip-card lime" style="--i:1"><div class="k">' + esc(t('classesCount')) + '</div><div class="v">' + cnt(d.classes.length) + '</div></div>' +
         '<div class="chip-card dark" style="--i:2"><div class="k">' + esc(t('students')) + '</div><div class="v">' + cnt(totalStudents) + '</div></div></div></section>';
-      html += '<section class="card next-actions"><div><div class="eyebrow">' + esc(t('nextActions')) + '</div><h2>' + esc(t('lecturerNextTitle')) + '</h2></div><div class="action-links">' +
+      html += '<section class="card next-actions"><div>' + secEyebrow(1, t('nextActions')) + '<h2>' + esc(t('lecturerNextTitle')) + '</h2></div><div class="action-links">' +
         (d.pendingClaims ? '<a href="#/claims">' + ic('med') + d.pendingClaims + ' ' + esc(t('pendingClaims')) + arw() + '</a>' : '') +
         (toGrade ? '<a href="#/tasks">' + ic('tasks') + toGrade + ' ' + esc(t('toGrade')) + arw() + '</a>' : '') +
         (d.atRisk.length ? '<a href="#/classes">' + ic('users') + d.atRisk.length + ' ' + esc(t('needAttention')) + arw() + '</a>' : '') +
         (d.pendingBookings ? '<a href="#/consult">' + ic('chat') + d.pendingBookings + ' ' + esc(t('pendingBookings')) + arw() + '</a>' : '') +
         '<a href="#/attendance">' + ic('calendar') + esc(t('nAttendanceL')) + arw() + '</a></div></section>';
-      html += '<section class="section-heading"><div><div class="eyebrow">' + esc(t('myCourses')) + '</div><h2>' + esc(t('chooseClassDashboard')) + '</h2></div><a class="btn btn-ghost btn-sm" href="#/classes">' + esc(t('viewAllClasses')) + '</a></section>' +
+      html += '<section class="section-heading"><div>' + secEyebrow(2, t('myCourses')) + '<h2>' + esc(t('chooseClassDashboard')) + '</h2></div><a class="btn btn-ghost btn-sm" href="#/classes">' + esc(t('viewAllClasses')) + '</a></section>' +
         classSwitcher(d.classes, selected && selected.class_id, '#/dashboard?c=');
       if (!selected) return html + '<div class="empty">' + esc(t('none')) + '</div>';
-      html += '<section class="class-focus"><div class="section-heading"><div><div class="eyebrow">' + esc(t('selectedClass')) + '</div><h2>' + esc(selected.course_code + ' · ' + selected.class_name) + '</h2><div class="muted">' + esc(selected.course_name) + ' · ' + selected.students + ' ' + esc(t('students').toLowerCase()) + '</div></div><a class="btn btn-ghost btn-sm" href="#/class/' + esc(selected.class_id) + '">' + esc(t('viewStudents')) + '</a></div>' +
+      html += '<div class="section-heading"><div>' + secEyebrow(3, t('selectedClass')) + '<h2>' + esc(selected.course_code + ' · ' + selected.class_name) + '</h2></div></div>' +
+        '<section class="class-focus ' + courseTheme(selected.course_code) + '">' + courseHead({ course_code: selected.course_code, course_name: selected.course_name, class_name: selected.class_name, sub: ic('users') + ' ' + selected.students + ' ' + esc(t('students').toLowerCase()) }, 0, '<a class="btn btn-sm chead-btn" href="#/class/' + esc(selected.class_id) + '">' + esc(t('viewStudents')) + arw() + '</a>') +
         '<div class="focus-metrics"><div><small>' + esc(t('attendance')) + '</small><strong>' + selected.attendance + '%</strong></div><div><small>' + esc(t('submissionRate')) + '</small><strong>' + selected.submissionRate + '%</strong></div><div><small>' + esc(t('avgMark')) + '</small><strong>' + (selected.averageMark === null ? '—' : selected.averageMark + '%') + '</strong></div><div><small>' + esc(t('needAttention')) + '</small><strong>' + classRisk.length + '</strong></div></div>' +
         '<div class="action-links class-actions"><a href="#/attendance?c=' + esc(selected.class_id) + '">' + ic('calendar') + esc(t('nAttendanceL')) + '</a><a href="#/tasks?c=' + esc(selected.class_id) + '">' + ic('tasks') + esc(t('nMarking')) + '</a><a href="#/reports?c=' + esc(selected.class_id) + '">' + ic('report') + esc(t('nReports')) + '</a></div></section>';
       // attendance by session (bar chart, chronological, latest highlighted)
@@ -670,10 +712,10 @@
         var p = s.students ? Math.round(s.present / s.students * 100) : 0;
         return '<div class="bar' + (i === pts.length - 1 ? ' hl' : '') + '" style="--i:' + i + '"><span class="v">' + p + '%</span><div class="col"><i style="height:' + p + '%"></i></div><span class="d">' + esc(fdate(s.date).split(' ').slice(0, 2).join(' ')) + '</span></div>';
       }).join('') + '</div>' : '<div class="empty">' + esc(t('none')) + '</div>';
-      html += '<div class="grid split"><div class="card"><div class="pagehead" style="margin-bottom:0"><div><h2 style="margin:0">' + ic('chart') + esc(t('attendanceTrend')) + '</h2><div class="small muted">' + esc(selected.course_code + ' · ' + selected.class_name) + '</div></div>' +
+      html += '<div class="section-heading"><div>' + secEyebrow(4, t('attendanceTrend') + ' · ' + t('needAttention')) + '</div></div><div class="grid split"><div class="card"><div class="pagehead" style="margin-bottom:0"><div><h2 style="margin:0">' + ic('chart') + esc(t('attendanceTrend')) + '</h2><div class="small muted">' + esc(selected.course_code + ' · ' + selected.class_name) + '</div></div>' +
         '<div class="legend"><span><i></i>' + esc(t('sessions')) + '</span><span><i class="l"></i>' + esc(t('latest')) + '</span></div></div>' + chart + '</div>' +
         '<div class="card"><h2>' + ic('alert') + esc(t('needAttention')) + ' · ' + esc(selected.class_name) + '</h2>' + (classRisk.length ? '<ul class="list">' + classRisk.slice(0, 6).map(function (s) {
-          return '<li><a class="person" href="#/student/' + s.class_id + '/' + s.student_id + '" style="text-decoration:none;color:inherit"><span class="avatar">' + esc(initials(s.name)) + '</span><div><strong>' + esc(s.name) + '</strong><div class="small muted">' + reasonText(s.reasons) + '</div></div></a>' + riskBadge(s.level) + '</li>';
+          return '<li><a class="person" href="#/student/' + s.class_id + '/' + s.student_id + '" style="text-decoration:none;color:inherit">' + avatar(s.name, 'student') + '<div><strong>' + esc(s.name) + '</strong><div class="small muted">' + reasonText(s.reasons) + '</div></div></a>' + riskBadge(s.level) + '</li>';
         }).join('') + '</ul>' : '<div class="empty">' + esc(t('allOnTrack')) + '</div>') + '</div></div>';
       html += '<div class="card" style="margin-top:18px"><h2>' + ic('calendar') + esc(t('upcomingDeadlines')) + ' · ' + esc(selected.class_name) + '</h2>' + (classDeadlines.length ? '<ul class="list">' + classDeadlines.map(function (x) {
         return '<li><div><a href="#/task/' + x.task_id + '"><strong>' + esc(x.title) + '</strong></a><div class="small muted">' + esc(selected.course_code) + ' · ' + esc(selected.class_name) + '</div></div><span class="badge b-blue nowrap">' + fdt(x.due_at) + '</span></li>';
@@ -689,10 +731,11 @@
       var html = '<div class="pagehead"><div><h1>' + esc(t('myCourses')) + '</h1><div class="muted">' + esc(t('myCoursesSub')) + '</div></div></div>';
       Object.keys(sems).sort().reverse().forEach(function (sem) {
         html += '<div class="eyebrow" style="margin:6px 0 12px">' + esc(sem) + '</div><div class="grid g2 anim" style="margin-bottom:22px">';
-        Object.keys(sems[sem]).sort().forEach(function (code) {
+        themeCourses(Object.keys(sems[sem]));
+        Object.keys(sems[sem]).sort().forEach(function (code, ci) {
           var list = sems[sem][code], name = list[0].course_name;
           var total = list.reduce(function (a, c) { return a + c.students; }, 0);
-          html += '<div class="card course"><div class="course-head">' + cover(code, false, list[0].lecturer_programme) + '<div><div class="eyebrow">' + esc(code) + '</div><h2 style="margin:4px 0 2px">' + esc(name) + '</h2><div class="small muted">' + list.length + ' ' + esc(t('classesWord')) + ' · ' + total + ' ' + esc(t('students').toLowerCase()) + '</div></div></div>' +
+          html += '<div class="card course themed">' + courseHead({ course_code: code, course_name: name, sub: ic('users') + ' ' + list.length + ' ' + esc(t('classesWord')) + ' · ' + total + ' ' + esc(t('students').toLowerCase()) }, ci + 1, cover(code, false, list[0].lecturer_programme)) +
             '<div class="class-rows">' + list.map(function (c) {
               return '<a class="class-row" href="#/class/' + c.class_id + '"><span class="cr-name">' + esc(c.class_name) + '</span><span class="small muted">' + c.students + ' ' + esc(t('students').toLowerCase()) + '</span>' +
                 '<span class="cr-att"><span class="small muted">' + esc(t('attendance')) + '</span> <strong>' + c.attendance + '%</strong></span>' +
@@ -711,10 +754,11 @@
       var order = { red: 0, orange: 1, yellow: 2, green: 3 };
       var list = d.students.slice().sort(function (a, b) { return order[a.level] - order[b.level] || (a.name < b.name ? -1 : 1); });
       var me = res[1].filter(function (x) { return x.class_id === c.class_id; })[0] || {};
-      return '<div class="pagehead"><div class="course-head">' + cover(c.course_code, false, me.lecturer_programme || S.user.programme) + '<div><a class="back" href="#/classes">← ' + esc(t('myCourses')) + '</a><h1>' + esc(c.course_code) + ' · ' + esc(c.class_name) + '</h1><div class="muted">' + esc(c.course_name) + ' · ' + esc(c.semester) + '</div></div></div>' + classPicker(res[1], c.class_id, '#/class/') + '</div>' +
+      return '<div class="pagehead"><a class="back" href="#/classes">← ' + esc(t('myCourses')) + '</a>' + classPicker(res[1], c.class_id, '#/class/') + '</div>' +
+        courseHead({ course_code: c.course_code, course_name: c.course_name, class_name: c.class_name, sub: esc(c.semester) + ' · ' + ic('users') + ' ' + list.length + ' ' + esc(t('students').toLowerCase()) }, 0, cover(c.course_code, false, me.lecturer_programme || S.user.programme), 'h1') +
         '<div class="card"><div class="tablewrap"><table><thead><tr><th>' + esc(t('name')) + '</th><th>' + esc(t('attendance')) + '</th><th class="hide-sm">' + esc(t('absences')) + '</th><th>' + esc(t('tMissing')) + '</th><th class="hide-sm">' + esc(t('average')) + '</th><th>' + esc(t('status')) + '</th></tr></thead><tbody>' +
         list.map(function (s) {
-          return '<tr class="clickable" data-act="nav" data-v="#/student/' + c.class_id + '/' + s.student_id + '"><td><strong>' + esc(s.name) + '</strong><div class="small muted">' + esc(s.student_id) + '</div></td>' +
+          return '<tr class="clickable" data-act="nav" data-v="#/student/' + c.class_id + '/' + s.student_id + '"><td><span class="person">' + avatar(s.name, 'student') + '<span><strong>' + esc(s.name) + '</strong><div class="small muted">' + esc(s.student_id) + '</div></span></span></td>' +
             '<td style="min-width:110px">' + s.attendance + '%' + meter(s.attendance, d.threshold) + '</td><td class="hide-sm">' + s.absent + '</td><td>' + (s.missing ? '<strong style="color:var(--red)">' + s.missing + '</strong>' : '0') + '</td>' +
             '<td class="hide-sm">' + (s.average === null ? '—' : s.average + '%') + '</td><td>' + riskBadge(s.level) + (s.reasons.length ? '<div class="small muted">' + reasonText(s.reasons) + '</div>' : '') + '</td></tr>';
         }).join('') + '</tbody></table></div></div>';
@@ -725,7 +769,7 @@
   L_PAGES.student = function (r) {
     return api('studentTimeline', { class_id: r.args[0], student_id: r.args[1] }).then(function (d) {
       var s = d.summary, st = d.student;
-      return '<div class="pagehead"><div><a href="#/class/' + d.cls.class_id + '" class="small">← ' + esc(d.cls.course_code) + ' · ' + esc(d.cls.class_name) + '</a><h1>' + esc(st.name) + '</h1><div class="muted">' + esc(st.user_id) + ' · ' + esc(st.programme) + ' · ' + esc(st.email) + '</div></div>' +
+      return '<div class="pagehead"><div><a href="#/class/' + d.cls.class_id + '" class="small">← ' + ctag(d.cls.course_code, d.cls.class_name) + '</a><h1 class="person-h1">' + avatar(st.name, 'student', 'lg') + esc(st.name) + '</h1><div class="muted">' + esc(st.user_id) + ' · ' + esc(st.programme) + ' · ' + esc(st.email) + '</div></div>' +
         '<button class="btn btn-primary" data-act="intervene" data-c="' + d.cls.class_id + '" data-s="' + st.user_id + '">' + ic('plus') + ' ' + esc(t('addIntervention')) + '</button></div>' +
         '<div class="grid g4 anim"><div class="tile t-brand"><div class="big">' + cnt(s.attendance.percent, '%') + '</div><div class="lbl">' + esc(t('attendance')) + '</div></div>' +
         '<div class="tile t-night"><div class="big">' + cnt(s.risk.missing) + '</div><div class="lbl">' + esc(t('tMissing')) + '</div></div>' +
@@ -881,8 +925,9 @@
       var byLecturer = {};
       classes.forEach(function (c) { (byLecturer[c.lecturer_id] = byLecturer[c.lecturer_id] || []).push(c); });
       return '<div class="pagehead"><div><h1>' + esc(t('adminClasses')) + '</h1><p class="muted">' + esc(t('adminClassesSub')) + '</p></div></div>' +
-        Object.keys(byLecturer).sort().map(function (lecturer) { return '<section class="admin-class-group"><div class="section-heading"><div><div class="eyebrow">' + esc(t('lecturerName')) + ' · ' + esc(lecturer) + '</div><h2>' + byLecturer[lecturer].length + ' ' + esc(t('classesWord')) + '</h2></div></div><div class="grid g2">' + byLecturer[lecturer].map(function (c) {
-          return '<a class="card admin-class" href="#/class/' + esc(c.class_id) + '"><span class="eyebrow">' + esc(c.course_code) + ' · ' + esc(c.class_name) + '</span><h2>' + esc(c.course_name) + '</h2><span class="small muted">' + esc(t('lecturerName')) + ': ' + esc(c.lecturer_id) + ' · ' + c.students + ' ' + esc(t('students')) + '</span><span class="badge b-blue">' + esc(t('attendance')) + ' ' + c.attendance + '%</span></a>';
+        (themeCourses(classes.map(function (c) { return c.course_code; })), '') +
+        Object.keys(byLecturer).sort().map(function (lecturer, li) { var L0 = byLecturer[lecturer][0]; return '<section class="admin-class-group"><div class="lect-band"><span class="cg-n">' + num2(li + 1) + '</span>' + avatar(L0.lecturer_name || lecturer, 'lecturer', 'lg') + '<div><small>' + esc(t('lecturerName')) + ' · ' + esc(lecturer) + '</small><h2>' + esc(L0.lecturer_name || lecturer) + '</h2></div><span class="lect-count">' + byLecturer[lecturer].length + ' ' + esc(t('classesWord')) + '</span></div><div class="grid g2">' + byLecturer[lecturer].map(function (c) {
+          return '<a class="card admin-class themed" href="#/class/' + esc(c.class_id) + '">' + courseHead({ course_code: c.course_code, course_name: c.course_name, class_name: c.class_name }, 0, '<div class="chead-big"><small>' + esc(t('attendance')) + '</small><b>' + c.attendance + '%</b></div>', 'h3') + '<span class="small muted">' + ic('users') + ' ' + c.students + ' ' + esc(t('students')) + (c.atRisk ? ' · <span class="badge b-red b-dot">' + c.atRisk + ' ' + esc(t('atRiskShort')) + '</span>' : '') + '</span></a>';
         }).join('') + '</div></section>'; }).join('');
     });
   };
@@ -917,7 +962,7 @@
       '<section class="card about-ai"><h2>' + ic('ai') + ' ' + esc(t('aboutAiTitle')) + '</h2><div class="grid g2"><div><h3>' + esc(t('aboutAiBuild')) + '</h3>' + li(['aboutAi1', 'aboutAi2', 'aboutAi3', 'aboutAi4']) + '</div>' +
       '<div><h3>' + esc(t('aboutAiProduct')) + '</h3>' + li(['aboutAi5', 'aboutAi6']) + '</div></div><p class="small muted">' + esc(t('aboutAiTool')) + '</p></section>' +
       '<section class="card"><h2>' + ic('users') + ' ' + esc(t('aboutTeam')) + '</h2><div class="team-grid">' + TEAM.map(function (n) {
-        return '<div class="team-member"><span class="avatar">' + esc(initials(n)) + '</span><strong>' + esc(n) + '</strong></div>';
+        return '<div class="team-member">' + avatar(n, 'lecturer') + '<strong>' + esc(n) + '</strong></div>';
       }).join('') + '</div></section></div>';
   }
   [S_PAGES, L_PAGES, A_PAGES].forEach(function (P) { P.about = function () { return Promise.resolve(aboutView(false)); }; });

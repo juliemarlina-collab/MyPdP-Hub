@@ -456,7 +456,8 @@ var MyPdPCore = (function () {
       var x = JSON.parse(JSON.stringify(c)), st = enrolled(db, c.class_id), risky = 0, att = 0;
       st.forEach(function (s) { var sm = studentSummary(db, s, c, cfg, cache); att += sm.attendance.percent; if (sm.risk.level === 'red' || sm.risk.level === 'orange') risky++; });
       x.students = st.length; x.attendance = st.length ? Math.round(att / st.length * 10) / 10 : 0; x.atRisk = risky;
-      x.lecturer_programme = (byKey(db.all('Users'), 'user_id')[c.lecturer_id] || {}).programme || '';
+      var lu = byKey(db.all('Users'), 'user_id')[c.lecturer_id] || {};
+      x.lecturer_programme = lu.programme || ''; x.lecturer_name = lu.name || c.lecturer_id;
       return x;
     });
   };

@@ -557,3 +557,111 @@ input[type=file]{font-size:.86rem;max-width:100%}
 
 /* landing: only the hero animates in, so the page never shows empty gaps while it loads or scrolls */
 .landing.anim > *:nth-child(n+2),.landing .bento.anim > *{animation:none}
+
+/* ================= v1.3 · visual identity ================= */
+/* Course colours: one course = one colour on every page (assigned A→Z, 5 colours) */
+.th-blue{--th:#3E4FD9;--th-ink:#ffffff;--th-acc:#C6F432;--th-soft:#E7E9FF;--th-line:rgba(198,244,50,.55)}
+.th-lime{--th:#C6F432;--th-ink:#14142B;--th-acc:#14142B;--th-soft:#F2FAD8;--th-line:rgba(62,79,217,.35)}
+.th-night{--th:#16162C;--th-ink:#ffffff;--th-acc:#C6F432;--th-soft:#ECECF3;--th-line:rgba(198,244,50,.45)}
+.th-peri{--th:#A7AEF4;--th-ink:#14142B;--th-acc:#3E4FD9;--th-soft:#EEF0FF;--th-line:rgba(255,255,255,.7)}
+.th-sky{--th:#1E9BEF;--th-ink:#ffffff;--th-acc:#C6F432;--th-soft:#E2F3FE;--th-line:rgba(255,255,255,.55)}
+
+/* coloured course header */
+.chead{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;background:var(--th);color:var(--th-ink);border-radius:22px;padding:16px 18px;min-height:84px}
+.chead-sw{position:absolute;inset:auto 0 -6px 0;width:100%;height:70%;pointer-events:none}
+.chead-sw path{fill:none;stroke:var(--th-line);stroke-width:10;stroke-linecap:round}
+.chead > *:not(svg){position:relative}
+.chead-n{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--th-acc);color:var(--th);font:800 .85rem var(--f-mono)}
+.chead-main{flex:1;min-width:0}
+.chead-code{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font:800 .78rem var(--f-mono);letter-spacing:.08em}
+.chead-class{display:inline-flex;align-items:center;gap:5px;font:700 .72rem var(--f-body);letter-spacing:0;background:var(--th-ink);color:var(--th);border-radius:999px;padding:3px 10px}
+.chead-class .ico{width:.95em;height:.95em}
+.chead-title{margin:4px 0 0;color:var(--th-ink);font-size:1.12rem;line-height:1.25}
+h1.chead-title{font-size:clamp(1.3rem,3vw,1.7rem)}
+h3.chead-title{font-size:1rem}
+.chead-sub{font-size:.8rem;opacity:.85;margin-top:3px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.chead-right{flex:none;display:flex;align-items:center;gap:10px}
+.chead-right .cover{width:64px;height:64px;border-radius:16px;box-shadow:0 0 0 3px var(--th-acc)}
+.chead-big{text-align:right;line-height:1}
+.chead-big small{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;opacity:.8;margin-bottom:4px}
+.chead-big b{font-size:1.9rem;font-weight:800}
+.chead-big em{display:block;font-style:normal;font-size:.72rem;font-weight:700;margin-top:4px;background:#fff;color:var(--bad);border-radius:999px;padding:3px 8px}
+.chead-big.low b{color:var(--th-ink);text-decoration:underline wavy #F2545B 2px;text-underline-offset:6px}
+.chead-btn{background:var(--th-acc);color:var(--th)}
+.chead .badge{box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+@media (max-width:600px){.chead{flex-wrap:wrap;padding:14px}.chead-right{width:100%;justify-content:flex-start}.chead-big{text-align:left}.chead-right .cover{display:none}}
+
+/* course block = header + white body joined */
+.cblock{margin-bottom:22px;scroll-margin-top:16px}
+.cblock .chead{border-radius:22px 22px 0 0}
+.cblock .cbody{border-radius:0 0 22px 22px;border:2px solid var(--th);border-top:0;box-shadow:var(--shadow)}
+.cblock .cbody thead th{color:var(--ink)}
+.stat-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.sc{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:.78rem;font-weight:600;background:var(--surface-2)}
+.sc b{font-size:.9rem}
+.sc-P{background:var(--good-bg);color:var(--good)} .sc-L{background:var(--warn-bg);color:var(--warn)} .sc-A{background:var(--bad-bg);color:var(--bad)} .sc-E{background:var(--info-bg);color:var(--brand)}
+
+/* jump bar */
+.cjump{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.cj{display:inline-flex;align-items:center;gap:8px;padding:7px 14px 7px 7px;border-radius:999px;background:var(--th);color:var(--th-ink);text-decoration:none;font-size:.82rem;box-shadow:var(--shadow)}
+.cj-n{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--th-acc);color:var(--th);font:800 .7rem var(--f-mono)}
+.cj b{font-family:var(--f-mono);letter-spacing:.04em}
+.cj-v{font-weight:800}
+.cj.low .cj-v{background:#fff;color:var(--bad);border-radius:999px;padding:1px 8px}
+.cj:hover{transform:translateY(-2px)}
+
+/* themed cards (header on top, card padding kept for body) */
+.card.themed{padding:0;overflow:hidden}
+.card.themed > .chead{border-radius:0}
+.card.themed > :not(.chead){margin-left:18px;margin-right:18px}
+.card.themed > :last-child{margin-bottom:18px}
+.card.themed .classcard{padding:0}
+.card.themed .classcard > :not(.chead){margin-left:18px;margin-right:18px}
+.card.themed .classcard > .chead{border-radius:0}
+.classcard.themed{gap:12px}
+.classcard.themed > .pchip{margin-bottom:16px}
+.card.course.themed .class-rows{margin-top:14px}
+.admin-class.themed{display:flex;flex-direction:column;gap:12px}
+.admin-class.themed > .small{margin-bottom:16px}
+
+/* course tag chip */
+.ctag{display:inline-flex;align-items:center;gap:6px;background:var(--th);color:var(--th-ink);font:800 .72rem var(--f-mono);letter-spacing:.05em;border-radius:9px;padding:5px 9px;white-space:nowrap}
+.ctag i{font-style:normal;font-family:var(--f-body);font-weight:700;background:var(--th-ink);color:var(--th);border-radius:6px;padding:1px 6px}
+.class-context{background:var(--th-soft,var(--info-bg));border-left:0;border:2px solid var(--th,var(--brand))}
+.class-context strong{display:flex!important;align-items:center;gap:6px}
+
+/* course switcher on lecturer dashboard */
+.course-group{padding:0;overflow:hidden;border:2px solid var(--th)}
+.course-group-title{background:var(--th);color:var(--th-ink);padding:14px 16px;margin:0;align-items:flex-start}
+.course-group-title small{color:inherit!important;opacity:.85;display:flex!important;align-items:center;gap:5px}
+.cg-n{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--th-acc,var(--lime));color:var(--th,var(--ink));font:800 .8rem var(--f-mono)}
+.cg-code{display:block;font:800 .72rem var(--f-mono);letter-spacing:.08em;opacity:.9;margin-bottom:2px}
+.class-switches{padding:12px}
+.class-switch strong{display:flex;align-items:center;gap:6px}
+.class-switch.selected{background:var(--th-soft);border-color:var(--th);box-shadow:inset 5px 0 var(--th)}
+.class-focus{padding:0;overflow:hidden;border:2px solid var(--th)}
+.class-focus > .chead{border-radius:0}
+.class-focus > .focus-metrics,.class-focus > .action-links{margin:16px}
+
+/* numbered section labels (01, 02 …) */
+.eb-num{display:flex;align-items:center;gap:8px}
+.eb-num b{display:inline-grid;place-items:center;min-width:28px;height:22px;padding:0 6px;border-radius:7px;background:var(--night);color:var(--lime);font:800 .7rem var(--f-mono);letter-spacing:0}
+
+/* people: students = round blue, lecturers = rounded-square lime, admin = square black */
+.avatar.av-student{border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--sky-2));color:#fff}
+.avatar.av-lecturer{border-radius:11px;background:var(--lime);color:var(--lime-ink);box-shadow:inset 0 0 0 2px rgba(20,20,43,.12)}
+.avatar.av-admin{border-radius:8px;background:var(--night);color:var(--lime)}
+.avatar.lg{width:46px;height:46px;font-size:.9rem}
+.pchip{display:inline-flex;align-items:center;gap:9px;padding:5px 12px 5px 5px;border-radius:14px;background:var(--surface-2);max-width:100%}
+.pchip strong{display:block;font-size:.84rem;line-height:1.2;color:var(--ink)}
+.pchip small{display:block;font-size:.7rem;color:var(--muted)}
+.pchip-lecturer{background:#F4FBDD}
+.pchip .avatar{width:30px;height:30px;font-size:.66rem}
+.person-h1{display:flex;align-items:center;gap:12px}
+.lect-band{display:flex;align-items:center;gap:12px;background:var(--night);color:#fff;border-radius:20px;padding:14px 16px;margin:6px 0 14px}
+.lect-band small{color:#c9c9e6;font-size:.72rem}
+.lect-band h2{margin:0;color:#fff;font-size:1.05rem}
+.lect-band .lect-count{margin-left:auto;background:var(--lime);color:var(--lime-ink);border-radius:999px;padding:5px 12px;font-weight:800;font-size:.8rem;white-space:nowrap}
+.admin-class.themed > .chead{align-self:stretch;width:auto;margin:0}
+.admin-class.themed{align-items:stretch}
+.classcard.themed > .cc-risk{margin-bottom:-4px}

@@ -1,5 +1,11 @@
 # MyPdP Insight – Demo UI update
 
+## Version 1.3 (30 Sep 2026) – visual identity
+- **Each course has its own colour** (blue, lime, black, periwinkle, sky), used everywhere: course headers, course groups on the lecturer dashboard, Kursus Saya, class pages, attendance/tasks/marks pages and course tags.
+- **Long pages are split by course:** student Attendance and Tasks show a coloured header per course (number 01/02/03, course code, class, big attendance %) and a jump bar at the top.
+- **Students, lecturers and admin look different:** students have round blue avatars, lecturers rounded-square lime avatars (shown as "Pensyarah" chips), admin square black avatars.
+- **Numbered sections** (01, 02, 03 …) on dashboards; the admin "Semua Kelas" page groups classes under a dark band per lecturer.
+
 ## Version 1.2 (30 Sep 2026)
 - **Log out on phones & tablets:** the bottom bar now shows 4 main items plus **Lagi / More**, which opens a menu with the other pages, About us, Change PIN and **Log keluar**. The name menu at the top also opens on screen now.
 - **Check-in page:** the illustration no longer makes the page scroll sideways on tablets. New **Imbas kod QR / Scan QR code** button opens the camera inside the app (BarcodeDetector where available, otherwise `vendor/jsQR.min.js`).
