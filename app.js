@@ -375,20 +375,26 @@
     var mq = feats.concat(feats).map(function (f) { return '<span>' + ic('spark') + esc(f) + '</span>'; }).join('');
     return '<div class="landing anim">' +
       '<section class="sky"' + bgAttr('hero') + '><div class="sky-nav"><span class="logo"><span class="logo-mark">PdP</span><span>MyPdP Insight</span></span>' +
-      '<nav class="links" aria-label="Sections"><a href="#/login" data-act="scrollto" data-v="portals">' + esc(t('choosePortal')) + '</a><a href="#/login" data-act="scrollto" data-v="loginbox">' + esc(t('login')) + '</a><a href="#/login" data-act="scrollto" data-v="features">' + esc(t('landFeatures')) + '</a></nav>' +
+      '<nav class="links" aria-label="Sections"><a href="#/login" data-act="scrollto" data-v="features">' + esc(t('landFeatures')) + '</a><a href="#/login" data-act="scrollto" data-v="loginbox">' + esc(t('login')) + '</a><a href="#/login" data-act="scrollto" data-v="about">' + esc(t('landHow')) + '</a></nav>' +
       '<div class="right-tools">' + langToggle() + '</div></div>' +
-      '<div class="sky-hero"><h1>' + esc(t('landH1a')) + '<span>' + esc(t('landH1b')) + '</span></h1><p>' + esc(t('landP')) + '</p></div>' +
-      '<div class="portal-choice" id="portals" aria-label="' + esc(t('choosePortal')) + '">' + ['student', 'lecturer', 'admin'].map(function (role) {
+      '<div class="sky-hero"><h1>' + esc(t('landH1a')) + '<span>' + esc(t('landH1b')) + '</span></h1><p>' + esc(t('landP')) + '</p>' +
+      '<div class="sky-cta">' + (LIVE ? '' : '<button class="btn btn-ghost" data-act="demologin" data-v="L004">' + esc(t('viewDemo')) + '</button>') +
+      '<button class="btn btn-primary" data-act="scrollto" data-v="loginbox">' + esc(t('getStarted')) + arw() + '</button></div></div>' +
+      '<div class="hc-stage" id="hcstage"><div class="hc-arc" id="hcarc">' + arc + '</div></div><div class="rated">' + esc(t('landRated')) + '<span class="stars" aria-hidden="true">★★★★★</span><span class="small">' + esc(t('flipHint')) + '</span></div>' +
+      '<div class="cloud c1" aria-hidden="true"></div><div class="cloud c2" aria-hidden="true"></div><div class="cloud c3" aria-hidden="true"></div><div class="cloud c4" aria-hidden="true"></div></section>' +
+      '<div class="marquee" id="features" aria-hidden="true"><div class="track">' + mq + '</div></div>' +
+      '<div class="about" id="about"><div class="eyebrow">' + esc(t('landAbout')) + '</div><h2>' + esc(t('about1')) + ' <span class="pill-ico" style="background:var(--sky-2);color:#fff">' + ic('pie') + '</span> ' + esc(t('about2')) +
+      ' <span class="soft">' + esc(t('about3')) + ' <span class="pill-ico" style="background:var(--lime);color:var(--lime-ink)">' + ic('bulb') + '</span> ' + esc(t('about4')) + '</span></h2></div>' +
+      '<div class="portal-choice" id="loginbox" aria-label="' + esc(t('choosePortal')) + '">' + ['student', 'lecturer', 'admin'].map(function (role) {
         var icon = role === 'student' ? 'book' : role === 'lecturer' ? 'users' : 'shield';
         return '<button type="button" class="portal-card' + (portalChoice === role ? ' selected' : '') + '" data-act="chooseportal" data-v="' + role + '" aria-pressed="' + (portalChoice === role) + '"><span class="portal-icon">' + ic(icon) + '</span><strong>' + esc(t(role + 'Portal')) + '</strong><span>' + esc(t(role + 'PortalDesc')) + '</span><span class="portal-go">' + esc(t('enterPortal')) + ' →</span></button>';
       }).join('') + '</div>' +
-      '<div class="cloud c1" aria-hidden="true"></div><div class="cloud c2" aria-hidden="true"></div><div class="cloud c3" aria-hidden="true"></div><div class="cloud c4" aria-hidden="true"></div></section>' +
-      '<div class="land-grid"><div><div class="card" id="loginbox"><div class="eyebrow">' + esc(t(portalChoice + 'Portal')) + '</div><h2 style="font-size:1.5rem;margin-top:6px">' + esc(t('welcomeBack')) + '</h2><p class="muted small">' + esc(t(portalChoice + 'PortalDesc')) + '</p>' +
+      '<div class="land-grid"><div><div class="card" id="loginform"><div class="eyebrow">' + esc(t(portalChoice + 'Portal')) + '</div><h2 style="font-size:1.5rem;margin-top:6px">' + esc(t('welcomeBack')) + '</h2><p class="muted small">' + esc(t(portalChoice + 'PortalDesc')) + '</p>' +
       '<form data-form="login" autocomplete="on"><label for="uid">' + esc(t('userId')) + '</label><input id="uid" name="user_id" type="text" autocapitalize="characters" required placeholder="' + (portalChoice === 'student' ? 'S001' : portalChoice === 'lecturer' ? 'L001' : 'A001') + '">' +
       '<div class="small muted" style="margin-top:4px">' + esc(t(portalChoice + 'LoginHint')) + '</div>' +
       '<label for="pin">' + esc(t('pin')) + '</label><input id="pin" name="pin" type="password" inputmode="numeric" required>' +
       '<div class="actions"><button class="btn btn-primary" type="submit" style="width:100%">' + esc(t('login')) + arw() + '</button></div></form></div>' + demo + '</div>' +
-      '<div class="bento anim" id="features">' +
+      '<div class="bento anim">' +
       '<div class="tile t-brand"><span class="go">' + ic('qr') + '</span><div class="big">' + cnt(10) + '<span style="font-size:1rem"> ' + (ms ? 'saat' : 'sec') + '</span></div><div class="lbl">' + esc(t('b1')) + '</div></div>' +
       '<div class="tile t-lime"><span class="go">' + ic('med') + '</span><div class="big">' + cnt(0) + '</div><div class="lbl">' + esc(t('b2')) + '</div></div>' +
       '<div class="tile t-white"><span class="go">' + ic('alert') + '</span><div class="big">' + cnt(4) + '</div><div class="lbl">' + esc(t('b3')) + '</div></div>' +
@@ -829,7 +835,7 @@
     chooseportal: function (el) {
       portalChoice = el.dataset.v;
       render();
-      var box = document.getElementById('loginbox');
+      var box = document.getElementById('loginform');
       if (box) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
     nav: function (el) { go(el.dataset.v); },

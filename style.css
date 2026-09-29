@@ -416,9 +416,6 @@ input[type=file]{font-size:.86rem;max-width:100%}
 @media (max-width:600px){ .spot{flex-direction:column;text-align:center;padding:14px} .spot > div{width:160px} .class-row{grid-template-columns:1fr auto 28px} .class-row .small.muted,.class-row .cr-att{display:none} }
 
 /* Clear role entry and action-first dashboards */
-.sky-hero{padding:24px 0 8px}
-.sky-hero h1{font-size:clamp(1.9rem,4.2vw,3.1rem)}
-.sky-hero p{margin-bottom:12px}
 .portal-choice{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px auto 0;max-width:1050px}
 .portal-card{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-height:152px;padding:18px;text-align:left;border:2px solid rgba(255,255,255,.72);border-radius:20px;background:rgba(255,255,255,.92);color:#171945;box-shadow:0 12px 28px rgba(16,36,100,.12);cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s}
 .portal-card:hover,.portal-card:focus-visible{transform:translateY(-3px);box-shadow:0 18px 35px rgba(16,36,100,.2);outline:none}
@@ -441,7 +438,7 @@ input[type=file]{font-size:.86rem;max-width:100%}
 .role-admin .portal-chip{background:#e8e1ff;color:#4c358f}
 .role-admin .side-in{background:linear-gradient(180deg,#35267a,#1c1748)}
 @media (max-width:900px){.next-actions{display:block}.action-links{justify-content:flex-start;margin-top:12px}}
-@media (max-width:600px){.portal-choice{grid-template-columns:1fr;gap:8px}.portal-card{min-height:0;padding:12px 14px;display:grid;grid-template-columns:32px 1fr;gap:2px 10px}.portal-icon{grid-row:1/4}.portal-go{margin:0}.sky-hero{padding-top:18px}.sky{padding-bottom:18px}}
+@media (max-width:600px){.portal-choice{grid-template-columns:1fr;gap:8px}.portal-card{min-height:0;padding:12px 14px;display:grid;grid-template-columns:32px 1fr;gap:2px 10px}.portal-icon{grid-row:1/4}.portal-go{margin:0}}
 
 /* ---------- image slots ---------- */
 .imgslot{display:block;position:relative;width:100%}

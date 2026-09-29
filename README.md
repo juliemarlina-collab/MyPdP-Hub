@@ -3,7 +3,7 @@
 Student tracking and monitoring for students and lecturers, with a BM/EN switch.
 
 ## Demo entry
-The welcome page presents separate Student, Lecturer and Admin choices. Each choice shows a role-specific login hint and fictional demo accounts. The admin demo account is A001; all demo accounts use PIN 1234. The role shown after login is determined by the authenticated account, not by the selected card.
+The original welcome hero, animated flip cards and moving feature strip are preserved. The separate Student, Lecturer and Admin choices sit below them, before the login form. Each choice shows a role-specific login hint and fictional demo accounts. The admin demo account is A001; all demo accounts use PIN 1234. The role shown after login is determined by the authenticated account, not by the selected card.
 
 Lecturer dashboards contain only assigned classes. The admin overview shows all classes and reports; user imports and account management remain in the connected Google Sheet / Apps Script editor. The student attendance figure in the greeting banner is labelled as the average of course attendance rates.
 
