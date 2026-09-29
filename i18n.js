@@ -2,6 +2,19 @@
    To change a word on screen, edit it here. Keep the key (left side) the same. */
 window.MYPDP_I18N = {
   ms: {
+    choosePortal: 'Pilih portal anda', enterPortal: 'Teruskan', adminPortal: 'PORTAL PENTADBIR',
+    studentPortalDesc: 'Semak kehadiran, tugasan, markah dan bantuan pensyarah.', lecturerPortalDesc: 'Urus kelas sendiri, semak tuntutan dan bantu pelajar.', adminPortalDesc: 'Pantau kelas institusi, laporan dan persediaan sistem.',
+    studentLoginHint: 'Gunakan nombor matrik anda.', lecturerLoginHint: 'Gunakan ID staf pensyarah anda.', adminLoginHint: 'Gunakan ID pentadbir anda.',
+    demoStudents: 'Cuba demo pelajar', demoLecturers: 'Cuba demo pensyarah', demoAdmin: 'Cuba demo pentadbir',
+    nextActions: 'LANGKAH SETERUSNYA', studentNextTitle: 'Apa yang perlu dibuat sekarang', lecturerNextTitle: 'Perkara untuk tindakan anda',
+    averageCourseAttendance: 'Purata kehadiran kursus',
+    adminOverview: 'Gambaran keseluruhan institusi', adminOverviewSub: 'Pantau kelas dan akses laporan. Data demo ini ialah contoh sahaja.',
+    adminCourses: 'Kursus', adminClasses: 'Semua Kelas', adminClassesSub: 'Kelas mengikut kursus dan pensyarah yang ditugaskan.', adminSetup: 'Persediaan Sistem', adminNext: 'Langkah pentadbir',
+    adminActionClasses: 'Semak senarai kursus dan kelas', adminActionReports: 'Buka laporan pemantauan', adminActionSetup: 'Semak langkah import dan persediaan',
+    adminScope: 'Skop pentadbir', adminScopeText: 'Paparan ini meliputi semua kelas. Pensyarah hanya melihat kelas yang ditugaskan kepada mereka.',
+    adminSetupSub: 'Pengurusan pengguna dan import dibuat dalam Google Sheet serta Apps Script yang disambungkan.',
+    adminStep1: 'Semak tab Users, Classes dan Enrolments dalam Google Sheet.', adminStep2: 'Sahkan padanan pensyarah, kursus, kelas dan pelajar sebelum import.',
+    adminStep3: 'Jalankan pengesahan data dan simpan salinan sandaran sebelum menggunakan data sebenar.', adminSetupNote: 'Tiada perubahan data dibuat melalui halaman panduan ini.',
     pinSetupTitle: 'Tetapkan PIN anda sendiri', pinSetupText: 'Ini log masuk pertama anda. Gantikan PIN sementara dengan PIN peribadi 6–8 digit. Elakkan digit berulang atau berturutan.',
     confirmPin: 'Sahkan PIN baharu', pinMismatch: 'PIN baharu tidak sepadan.', chooseClassConsult: 'Konsultasi untuk kelas', myCourses: 'Kursus Saya', myCoursesSub: 'Semester → kursus → kelas. Klik kelas untuk lihat pelajar.',
     classesWord: 'kelas', atRiskShort: 'berisiko', correctionTitle: 'Pembetulan rekod bersebab', correctionText: 'Anda menukar sesi yang direkod sebagai Tidak Hadir Bersebab (tuntutan diluluskan). Nyatakan sebab; ia disimpan dalam log audit.',
@@ -32,7 +45,7 @@ window.MYPDP_I18N = {
     language: 'Bahasa', today: 'Hari ini', open: 'Buka', lecturerName: 'Pensyarah', students: 'Pelajar', action: 'Tindakan',
     // risk
     riskGreen: 'Di Landasan', riskYellow: 'Pantau', riskOrange: 'Perlu Intervensi', riskRed: 'Perhatian Tinggi',
-    sRiskGreen: 'Di landasan', sRiskYellow: 'Beri perhatian', sRiskOrange: 'Jom kejar semula', sRiskRed: 'Sila jumpa pensyarah',
+    sRiskGreen: 'Di landasan', sRiskYellow: 'Beri perhatian', sRiskOrange: 'Jom kejar semula', sRiskRed: 'Perlu bantuan',
     // attendance
     attP: 'Hadir', attL: 'Lewat', attA: 'Tidak Hadir', attE: 'Tidak Hadir Bersebab', attNone: 'Belum direkod',
     attPs: 'Hadir', attLs: 'Lewat', attAs: 'Tidak', attEs: 'Bersebab',
@@ -85,6 +98,19 @@ window.MYPDP_I18N = {
     yourClasses: 'Kelas anda', recentMarks: 'Markah terkini', upcomingConsult: 'Temujanji akan datang', claimsPending: 'tuntutan menunggu semakan'
   },
   en: {
+    choosePortal: 'Choose your portal', enterPortal: 'Continue', adminPortal: 'ADMIN PORTAL',
+    studentPortalDesc: 'Check attendance, tasks, marks and lecturer support.', lecturerPortalDesc: 'Manage your classes, review claims and support students.', adminPortalDesc: 'Oversee institution classes, reports and system setup.',
+    studentLoginHint: 'Use your student ID.', lecturerLoginHint: 'Use your lecturer staff ID.', adminLoginHint: 'Use your administrator ID.',
+    demoStudents: 'Try student demo', demoLecturers: 'Try lecturer demo', demoAdmin: 'Try admin demo',
+    nextActions: 'NEXT ACTIONS', studentNextTitle: 'What to do now', lecturerNextTitle: 'Items for your attention',
+    averageCourseAttendance: 'Average course attendance',
+    adminOverview: 'Institution overview', adminOverviewSub: 'Review classes and reports. Demo data is illustrative.',
+    adminCourses: 'Courses', adminClasses: 'All Classes', adminClassesSub: 'Classes by course and assigned lecturer.', adminSetup: 'System Setup', adminNext: 'Admin steps',
+    adminActionClasses: 'Review courses and classes', adminActionReports: 'Open monitoring reports', adminActionSetup: 'Review import and setup steps',
+    adminScope: 'Admin scope', adminScopeText: 'This view covers all classes. Lecturers only see classes assigned to them.',
+    adminSetupSub: 'User management and imports take place in the connected Google Sheet and Apps Script.',
+    adminStep1: 'Review the Users, Classes and Enrolments tabs in Google Sheets.', adminStep2: 'Verify lecturer, course, class and student mappings before import.',
+    adminStep3: 'Run data validation and retain a backup before using real data.', adminSetupNote: 'This guidance page does not change any records.',
     pinSetupTitle: 'Set your own PIN', pinSetupText: 'This is your first login. Replace the temporary PIN with a personal 6–8 digit PIN. Avoid repeated or running digits.',
     confirmPin: 'Confirm new PIN', pinMismatch: 'The new PINs do not match.', chooseClassConsult: 'Consultation for class', myCourses: 'My Courses', myCoursesSub: 'Semester → course → class. Open a class to see its students.',
     classesWord: 'classes', atRiskShort: 'at risk', correctionTitle: 'Correcting an excused absence', correctionText: 'You are changing a session recorded as Absent with reason (approved claim). Give a reason; it is saved in the audit log.',
@@ -112,7 +138,7 @@ window.MYPDP_I18N = {
     hello: 'Hi', changePin: 'Change PIN', oldPin: 'Current PIN', newPin: 'New PIN (6–8 digits)', pinChanged: 'PIN changed',
     language: 'Language', today: 'Today', open: 'Open', lecturerName: 'Lecturer', students: 'Students', action: 'Action',
     riskGreen: 'On Track', riskYellow: 'Monitor', riskOrange: 'Intervention Needed', riskRed: 'High Attention',
-    sRiskGreen: 'On track', sRiskYellow: 'Keep an eye on it', sRiskOrange: "Let's catch up", sRiskRed: 'Please see your lecturer',
+    sRiskGreen: 'On track', sRiskYellow: 'Keep an eye on it', sRiskOrange: "Let's catch up", sRiskRed: 'Support needed',
     attP: 'Present', attL: 'Late', attA: 'Absent', attE: 'Absent with reason', attNone: 'Not marked',
     attPs: 'Present', attLs: 'Late', attAs: 'Absent', attEs: 'Excused',
     attendance: 'Attendance', absences: 'Absences', threshold: 'Minimum', formula: 'How it is calculated',

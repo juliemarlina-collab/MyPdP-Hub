@@ -252,6 +252,7 @@
 
   var NAV_S = [['dashboard', ic('home'), 'nDashboard'], ['checkin', ic('qr'), 'nCheckin'], ['attendance', ic('calendar'), 'nAttendance'], ['claims', ic('med'), 'nClaims'], ['tasks', ic('tasks'), 'nTasks'], ['marks', ic('chart'), 'nMarks'], ['consult', ic('chat'), 'nConsult'], ['notifications', ic('bell'), 'nNotif']];
   var NAV_L = [['dashboard', ic('home'), 'nDashboard'], ['classes', ic('book'), 'myCourses'], ['attendance', ic('calendar'), 'nAttendanceL'], ['claims', ic('med'), 'nClaimsL'], ['tasks', ic('tasks'), 'nMarking'], ['consult', ic('chat'), 'nConsult'], ['reports', ic('report'), 'nReports'], ['notifications', ic('bell'), 'nNotif']];
+  var NAV_A = [['dashboard', ic('home'), 'nDashboard'], ['classes', ic('book'), 'adminClasses'], ['reports', ic('report'), 'nReports'], ['setup', ic('gear'), 'adminSetup'], ['notifications', ic('bell'), 'nNotif']];
 
   function langToggle() {
     return '<div class="lang" role="group" aria-label="' + esc(t('language')) + '">' +
@@ -259,10 +260,10 @@
   }
 
   function shell(active, content) {
-    var nav = isLect() ? NAV_L : NAV_S;
+    var nav = S.user.role === 'admin' ? NAV_A : (isLect() ? NAV_L : NAV_S);
     var cur = nav.filter(function (n) { return n[0] === active; })[0] || nav[0];
-    return '<div class="app"><aside class="side"><div class="side-in">' +
-      '<a class="logo" href="#/dashboard"><span class="logo-mark">PdP</span><span>MyPdP Insight<small>' + esc(t(S.user.role === 'student' ? 'studentPortal' : 'lecturerPortal')) + '</small></span></a>' +
+    return '<div class="app role-' + esc(S.user.role) + '"><aside class="side"><div class="side-in">' +
+      '<a class="logo" href="#/dashboard"><span class="logo-mark">PdP</span><span>MyPdP Insight<small>' + esc(t(S.user.role === 'student' ? 'studentPortal' : S.user.role === 'admin' ? 'adminPortal' : 'lecturerPortal')) + '</small></span></a>' +
       '<nav class="nav" aria-label="Menu">' + nav.map(function (n) {
         var on = active === n[0];
         return '<a href="#/' + n[0] + '" class="' + (on ? 'active' : '') + '"' + (on ? ' aria-current="page"' : '') + '>' + n[1] + '<span>' + esc(t(n[2])) + '</span>' +
@@ -270,7 +271,7 @@
       }).join('') + '</nav>' +
       '<div class="side-foot"><div class="side-card"><strong>' + esc(t('threshold')) + ': ' + (S.settings.threshold || 80) + '%</strong>' + esc(t('sideTip')) + '</div>' +
       '<button class="side-btn" data-act="logout">' + ic('logout') + esc(t('logout')) + '</button></div></div></aside>' +
-      '<main class="main" id="main"><div class="topbar"><span class="crumb">MyPdP / ' + esc(t(cur[2])) + '</span>' + (LIVE ? '' : '<span class="demo-chip">' + esc(t('demoMode')) + '</span>') +
+      '<main class="main" id="main"><div class="topbar"><span class="crumb">MyPdP / ' + esc(t(cur[2])) + '</span><span class="portal-chip">' + esc(t(S.user.role + 'Portal')) + '</span>' + (LIVE ? '' : '<span class="demo-chip">' + esc(t('demoMode')) + '</span>') +
       '<div class="spacer"></div>' + langToggle() +
       '<button class="iconbtn" data-act="nav" data-v="#/notifications" aria-label="' + esc(t('nNotif')) + '">' + ic('bell') + (S.unread ? '<span class="dot">' + S.unread + '</span>' : '') + '</button>' +
       '<div class="usermenu"><button data-act="usermenu" aria-haspopup="true"><span class="avatar">' + esc(initials(S.user.name)) + '</span><span class="uname">' + esc(S.user.name) + '</span></button>' +
@@ -292,7 +293,7 @@
     if (r.name === 'login' || !r.name) { history.replaceState(null, '', '#/dashboard'); r = route(); }
     var pending = tget('mypdp_pending_checkin');
     if (pending && !isLect()) { tset('mypdp_pending_checkin', null); history.replaceState(null, '', '#/checkin/' + pending); r = route(); }
-    var pages = isLect() ? L_PAGES : S_PAGES;
+    var pages = S.user.role === 'admin' ? A_PAGES : (isLect() ? L_PAGES : S_PAGES);
     var page = pages[r.name] || pages.dashboard;
     var activeName = pages[r.name] ? ({ 'class': 'classes', student: 'classes', session: 'attendance', task: 'tasks' }[r.name] || r.name) : 'dashboard';
     app.innerHTML = shell(activeName, '<div class="spinner">' + esc(t('loading')) + '</div>');
@@ -337,12 +338,14 @@
   }
 
   // ---------- login ----------
+  var portalChoice = 'student';
   function loginView() {
     var ms = lang === 'ms';
     var demo = '';
     if (!LIVE) {
-      var users = demoDb.all('Users').filter(function (u) { return ['L004', 'L002', 'L003', 'S003', 'S005', 'S051'].indexOf(u.user_id) >= 0; });
-      demo = '<div class="card" style="margin-top:16px"><div class="eyebrow">' + esc(t('demoAccounts')) + ' · PIN 1234</div><p class="small muted" style="margin:6px 0 10px">' + esc(t('demoNote')) + '</p><div class="demo-users">' + users.map(function (u) {
+      var ids = portalChoice === 'student' ? ['S003', 'S005', 'S051'] : portalChoice === 'lecturer' ? ['L004', 'L002', 'L003'] : ['A001'];
+      var users = demoDb.all('Users').filter(function (u) { return ids.indexOf(u.user_id) >= 0; });
+      demo = '<div class="card" style="margin-top:16px"><div class="eyebrow">' + esc(t(portalChoice === 'student' ? 'demoStudents' : portalChoice === 'lecturer' ? 'demoLecturers' : 'demoAdmin')) + ' · PIN 1234</div><p class="small muted" style="margin:6px 0 10px">' + esc(t('demoNote')) + '</p><div class="demo-users">' + users.map(function (u) {
         return '<button data-act="demologin" data-v="' + u.user_id + '"><span class="avatar">' + esc(initials(u.name)) + '</span><span><strong>' + esc(u.name) + '</strong><br><span class="muted small">' + esc(u.user_id) + ' · ' + esc(t(u.role)) + '</span></span></button>';
       }).join('') + '</div></div>';
     }
@@ -372,22 +375,20 @@
     var mq = feats.concat(feats).map(function (f) { return '<span>' + ic('spark') + esc(f) + '</span>'; }).join('');
     return '<div class="landing anim">' +
       '<section class="sky"' + bgAttr('hero') + '><div class="sky-nav"><span class="logo"><span class="logo-mark">PdP</span><span>MyPdP Insight</span></span>' +
-      '<nav class="links" aria-label="Sections"><a href="#/login" data-act="scrollto" data-v="features">' + esc(t('landFeatures')) + '</a><a href="#/login" data-act="scrollto" data-v="loginbox">' + esc(t('login')) + '</a><a href="#/login" data-act="scrollto" data-v="about">' + esc(t('landHow')) + '</a></nav>' +
+      '<nav class="links" aria-label="Sections"><a href="#/login" data-act="scrollto" data-v="portals">' + esc(t('choosePortal')) + '</a><a href="#/login" data-act="scrollto" data-v="loginbox">' + esc(t('login')) + '</a><a href="#/login" data-act="scrollto" data-v="features">' + esc(t('landFeatures')) + '</a></nav>' +
       '<div class="right-tools">' + langToggle() + '</div></div>' +
-      '<div class="sky-hero"><h1>' + esc(t('landH1a')) + '<span>' + esc(t('landH1b')) + '</span></h1><p>' + esc(t('landP')) + '</p>' +
-      '<div class="sky-cta">' + (LIVE ? '' : '<button class="btn btn-ghost" data-act="demologin" data-v="L004">' + esc(t('viewDemo')) + '</button>') +
-      '<button class="btn btn-primary" data-act="scrollto" data-v="loginbox">' + esc(t('getStarted')) + arw() + '</button></div></div>' +
-      '<div class="hc-stage" id="hcstage"><div class="hc-arc" id="hcarc">' + arc + '</div></div><div class="rated">' + esc(t('landRated')) + '<span class="stars" aria-hidden="true">★★★★★</span><span class="small">' + esc(t('flipHint')) + '</span></div>' +
+      '<div class="sky-hero"><h1>' + esc(t('landH1a')) + '<span>' + esc(t('landH1b')) + '</span></h1><p>' + esc(t('landP')) + '</p></div>' +
+      '<div class="portal-choice" id="portals" aria-label="' + esc(t('choosePortal')) + '">' + ['student', 'lecturer', 'admin'].map(function (role) {
+        var icon = role === 'student' ? 'book' : role === 'lecturer' ? 'users' : 'shield';
+        return '<button type="button" class="portal-card' + (portalChoice === role ? ' selected' : '') + '" data-act="chooseportal" data-v="' + role + '" aria-pressed="' + (portalChoice === role) + '"><span class="portal-icon">' + ic(icon) + '</span><strong>' + esc(t(role + 'Portal')) + '</strong><span>' + esc(t(role + 'PortalDesc')) + '</span><span class="portal-go">' + esc(t('enterPortal')) + ' →</span></button>';
+      }).join('') + '</div>' +
       '<div class="cloud c1" aria-hidden="true"></div><div class="cloud c2" aria-hidden="true"></div><div class="cloud c3" aria-hidden="true"></div><div class="cloud c4" aria-hidden="true"></div></section>' +
-      '<div class="marquee" id="features" aria-hidden="true"><div class="track">' + mq + '</div></div>' +
-      '<div class="about" id="about"><div class="eyebrow">' + esc(t('landAbout')) + '</div><h2>' + esc(t('about1')) + ' <span class="pill-ico" style="background:var(--sky-2);color:#fff">' + ic('pie') + '</span> ' + esc(t('about2')) +
-      ' <span class="soft">' + esc(t('about3')) + ' <span class="pill-ico" style="background:var(--lime);color:var(--lime-ink)">' + ic('bulb') + '</span> ' + esc(t('about4')) + '</span></h2></div>' +
-      '<div class="land-grid"><div><div class="card" id="loginbox"><div class="eyebrow">' + esc(t(CFG.INSTITUTION ? 'login' : 'login')) + '</div><h2 style="font-size:1.5rem;margin-top:6px">' + esc(t('welcomeBack')) + '</h2>' +
-      '<form data-form="login" autocomplete="on"><label for="uid">' + esc(t('userId')) + '</label><input id="uid" name="user_id" type="text" autocapitalize="characters" required placeholder="S001">' +
-      '<div class="small muted" style="margin-top:4px">' + esc(t('loginHint')) + '</div>' +
+      '<div class="land-grid"><div><div class="card" id="loginbox"><div class="eyebrow">' + esc(t(portalChoice + 'Portal')) + '</div><h2 style="font-size:1.5rem;margin-top:6px">' + esc(t('welcomeBack')) + '</h2><p class="muted small">' + esc(t(portalChoice + 'PortalDesc')) + '</p>' +
+      '<form data-form="login" autocomplete="on"><label for="uid">' + esc(t('userId')) + '</label><input id="uid" name="user_id" type="text" autocapitalize="characters" required placeholder="' + (portalChoice === 'student' ? 'S001' : portalChoice === 'lecturer' ? 'L001' : 'A001') + '">' +
+      '<div class="small muted" style="margin-top:4px">' + esc(t(portalChoice + 'LoginHint')) + '</div>' +
       '<label for="pin">' + esc(t('pin')) + '</label><input id="pin" name="pin" type="password" inputmode="numeric" required>' +
       '<div class="actions"><button class="btn btn-primary" type="submit" style="width:100%">' + esc(t('login')) + arw() + '</button></div></form></div>' + demo + '</div>' +
-      '<div class="bento anim">' +
+      '<div class="bento anim" id="features">' +
       '<div class="tile t-brand"><span class="go">' + ic('qr') + '</span><div class="big">' + cnt(10) + '<span style="font-size:1rem"> ' + (ms ? 'saat' : 'sec') + '</span></div><div class="lbl">' + esc(t('b1')) + '</div></div>' +
       '<div class="tile t-lime"><span class="go">' + ic('med') + '</span><div class="big">' + cnt(0) + '</div><div class="lbl">' + esc(t('b2')) + '</div></div>' +
       '<div class="tile t-white"><span class="go">' + ic('alert') + '</span><div class="big">' + cnt(4) + '</div><div class="lbl">' + esc(t('b3')) + '</div></div>' +
@@ -420,9 +421,14 @@
         '<p>' + esc(worst === 'orange' || worst === 'red' ? t('heroStudentRisk') : t('heroStudentOk')) + '</p>' +
         '<div class="actions" style="margin:0"><a class="btn btn-primary" href="#/checkin">' + ic('qr') + esc(t('nCheckin')) + arw() + '</a>' +
         (worst === 'orange' || worst === 'red' ? '<a class="btn btn-dark" href="#/consult">' + ic('chat') + esc(t('bookSlot')) + '</a>' : '') + '</div></div>' +
-        '<div class="hero-float"><div class="chip-card" style="--i:0"><div class="k">' + esc(t('attendance')) + '</div><div class="v">' + cnt(avg, '%') + '</div></div>' +
+        '<div class="hero-float"><div class="chip-card" style="--i:0"><div class="k">' + esc(t('averageCourseAttendance')) + '</div><div class="v">' + cnt(avg, '%') + '</div></div>' +
         '<div class="chip-card lime" style="--i:1"><div class="k">' + esc(t('yourClasses')) + '</div><div class="v">' + cnt(d.classes.length) + '</div></div>' +
         '<div class="chip-card dark" style="--i:2"><div class="k">' + esc(t('nNotif')) + '</div><div class="v">' + cnt(S.unread) + '</div></div></div></section>';
+      html += '<section class="card next-actions"><div><div class="eyebrow">' + esc(t('nextActions')) + '</div><h2>' + esc(t('studentNextTitle')) + '</h2></div><div class="action-links">' +
+        '<a href="#/checkin">' + ic('qr') + esc(t('nCheckin')) + arw() + '</a>' +
+        (d.missing.length ? '<a href="#/tasks">' + ic('alert') + d.missing.length + ' ' + esc(t('missingWork')) + arw() + '</a>' : '') +
+        (d.upcoming.length ? '<a href="#/tasks">' + ic('clock') + d.upcoming.length + ' ' + esc(t('dueSoon')) + arw() + '</a>' : '') +
+        (worst === 'orange' || worst === 'red' ? '<a href="#/consult">' + ic('chat') + esc(t('bookSlot')) + arw() + '</a>' : '') + '</div></section>';
       html += '<div class="grid g4 anim" style="margin-bottom:18px">' + tile('t-lime', d.upcoming.length, t('dueSoon'), '#/tasks') + tile('t-night', d.missing.length, t('missingWork'), '#/tasks') +
         tile('t-brand', d.pendingClaims, t('claimsPendingShort'), '#/claims') + tile('t-white', d.bookings.length, t('upcomingConsult'), '#/consult') + '</div>';
       html += '<h2>' + ic('users') + esc(t('yourClasses')) + '</h2><div class="grid g3 anim">' + d.classes.map(function (c) {
@@ -589,6 +595,12 @@
         '<div class="hero-float"><div class="chip-card" style="--i:0"><div class="k">' + esc(t('avgAttendance')) + '</div><div class="v">' + cnt(avgAtt, '%') + '</div></div>' +
         '<div class="chip-card lime" style="--i:1"><div class="k">' + esc(t('classesCount')) + '</div><div class="v">' + cnt(d.classes.length) + '</div></div>' +
         '<div class="chip-card dark" style="--i:2"><div class="k">' + esc(t('students')) + '</div><div class="v">' + cnt(totalStudents) + '</div></div></div></section>';
+      html += '<section class="card next-actions"><div><div class="eyebrow">' + esc(t('nextActions')) + '</div><h2>' + esc(t('lecturerNextTitle')) + '</h2></div><div class="action-links">' +
+        (d.pendingClaims ? '<a href="#/claims">' + ic('med') + d.pendingClaims + ' ' + esc(t('pendingClaims')) + arw() + '</a>' : '') +
+        (toGrade ? '<a href="#/tasks">' + ic('tasks') + toGrade + ' ' + esc(t('toGrade')) + arw() + '</a>' : '') +
+        (d.atRisk.length ? '<a href="#/classes">' + ic('users') + d.atRisk.length + ' ' + esc(t('needAttention')) + arw() + '</a>' : '') +
+        (d.pendingBookings ? '<a href="#/consult">' + ic('chat') + d.pendingBookings + ' ' + esc(t('pendingBookings')) + arw() + '</a>' : '') +
+        '<a href="#/attendance">' + ic('calendar') + esc(t('nAttendanceL')) + arw() + '</a></div></section>';
       html += '<div class="grid g4 anim" style="margin-bottom:18px">' + tile('t-night', d.atRisk.length, t('needAttention'), '#/classes') + tile('t-lime', d.pendingClaims, t('pendingClaims'), '#/claims') +
         tile('t-brand', toGrade, t('toGrade'), '#/tasks') + tile('t-white', d.pendingBookings, t('pendingBookings'), '#/consult') + '</div>';
       // attendance by session (bar chart, chronological, latest highlighted)
@@ -775,10 +787,51 @@
     });
   };
 
+  // ================= ADMIN PAGES =================
+  // Admin oversight is distinct from a lecturer's personal teaching workspace.
+  // User imports and setup remain in the connected Sheet / Apps Script editor.
+  var A_PAGES = {
+    class: L_PAGES.class,
+    student: L_PAGES.student,
+    reports: L_PAGES.reports,
+    notifications: L_PAGES.notifications
+  };
+  A_PAGES.classes = function () {
+    return api('myClasses').then(function (classes) {
+      return '<div class="pagehead"><div><h1>' + esc(t('adminClasses')) + '</h1><p class="muted">' + esc(t('adminClassesSub')) + '</p></div></div>' +
+        '<div class="grid g2">' + classes.map(function (c) {
+          return '<a class="card admin-class" href="#/class/' + esc(c.class_id) + '"><span class="eyebrow">' + esc(c.course_code) + ' · ' + esc(c.class_name) + '</span><h2>' + esc(c.course_name) + '</h2><span class="small muted">' + esc(t('lecturerName')) + ': ' + esc(c.lecturer_id) + ' · ' + c.students + ' ' + esc(t('students')) + '</span><span class="badge b-blue">' + esc(t('attendance')) + ' ' + c.attendance + '%</span></a>';
+        }).join('') + '</div>';
+    });
+  };
+  A_PAGES.dashboard = function () {
+    return api('lecturerDashboard').then(function (d) {
+      var courses = {};
+      d.classes.forEach(function (c) { courses[c.course_code] = true; });
+      return '<div class="pagehead"><div><div class="eyebrow">' + esc(t('adminPortal')) + '</div><h1>' + esc(t('adminOverview')) + '</h1><p class="muted">' + esc(t('adminOverviewSub')) + '</p></div></div>' +
+        '<div class="grid g4 admin-stats">' +
+        tile('t-brand', Object.keys(courses).length, t('adminCourses'), '#/classes') +
+        tile('t-lime', d.classes.length, t('classesCount'), '#/classes') +
+        tile('t-night', d.atRisk.length, t('needAttention'), '#/classes') +
+        tile('t-white', d.classes.reduce(function (n, c) { return n + c.toGrade; }, 0), t('toGrade'), '#/reports') + '</div>' +
+        '<div class="grid g2" style="margin-top:18px"><div class="card"><h2>' + ic('tasks') + esc(t('adminNext')) + '</h2><ol class="action-list"><li><a href="#/classes">' + esc(t('adminActionClasses')) + arw() + '</a></li><li><a href="#/reports">' + esc(t('adminActionReports')) + arw() + '</a></li><li><a href="#/setup">' + esc(t('adminActionSetup')) + arw() + '</a></li></ol></div>' +
+        '<div class="card"><h2>' + ic('shield') + esc(t('adminScope')) + '</h2><p class="muted">' + esc(t('adminScopeText')) + '</p></div></div>';
+    });
+  };
+  A_PAGES.setup = function () {
+    return Promise.resolve('<div class="pagehead"><div><h1>' + esc(t('adminSetup')) + '</h1><p class="muted">' + esc(t('adminSetupSub')) + '</p></div></div><div class="card"><ol class="action-list"><li>' + esc(t('adminStep1')) + '</li><li>' + esc(t('adminStep2')) + '</li><li>' + esc(t('adminStep3')) + '</li></ol><p class="small muted">' + esc(t('adminSetupNote')) + '</p></div>');
+  };
+
   // ================= ACTIONS (clicks) =================
   var qrTimer = null;
   var ACTIONS = {
     lang: function (el) { lang = el.dataset.v; sset('mypdp_lang', lang); render(); },
+    chooseportal: function (el) {
+      portalChoice = el.dataset.v;
+      render();
+      var box = document.getElementById('loginbox');
+      if (box) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
     nav: function (el) { go(el.dataset.v); },
     flipcard: function (el) { el.classList.toggle('flipped'); el.classList.add('held'); setTimeout(function () { el.classList.remove('held'); }, 4000); },
     scrollto: function (el) { var x = document.getElementById(el.dataset.v); if (x) { x.scrollIntoView({ behavior: 'smooth', block: 'start' }); var f = x.querySelector('input'); if (f) setTimeout(function () { f.focus({ preventScroll: true }); }, 500); } },
