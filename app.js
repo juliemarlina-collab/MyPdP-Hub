@@ -489,7 +489,7 @@
       var pendingIds = {};
       claims.forEach(function (c) { if (c.status !== 'Rejected') c.sessions.forEach(function (s) { pendingIds[s.session_id] = 1; }); });
       var sess = cls ? cls.attendance.sessions.filter(function (s) { return s.status !== 'P' && s.status !== 'E' && !pendingIds[s.session_id]; }) : [];
-      var html = '<div class="pagehead"><h1>' + esc(t('nClaims')) + '</h1></div><div class="spot"><div>' + illu('claim') + '</div><p>' + esc(t('claimIntro')) + '</p></div><div class="grid g2 anim"><div class="card"><h2>' + esc(t('claimNew')) + '</h2><p class="small muted">' + esc(t('claimIntro')) + '</p>' +
+      var html = '<div class="pagehead"><h1>' + esc(t('nClaims')) + '</h1></div><div class="spot"><div>' + illu('claim') + '</div><p>' + esc(t('claimIntro')) + '</p></div><div class="grid g2 anim"><div class="card"><h2>' + esc(t('claimNew')) + '</h2>' +
         '<form data-form="claim"><label for="c-class">' + esc(t('chooseClass')) + '</label><select id="c-class" name="class_id" data-act="claimclass">' +
         att.classes.map(function (c) { return '<option value="' + c.class_id + '"' + (cls && c.class_id === cls.class_id ? ' selected' : '') + '>' + esc(c.course_code + ' · ' + c.class_name) + '</option>'; }).join('') + '</select>' +
         '<label>' + esc(t('chooseSessions')) + '</label>' + (sess.length ? sess.map(function (s) {
@@ -527,11 +527,11 @@
   S_PAGES.marks = function () {
     return Promise.all([api('myTasks'), api('studentDashboard')]).then(function (res) {
       var risk = {}; res[1].classes.forEach(function (c) { risk[c.class_id] = c.risk; });
-      var html = '<div class="pagehead"><h1>' + esc(t('nMarks')) + '</h1></div><div class="grid g2 anim">';
+      var html = '<div class="pagehead"><h1>' + esc(t('nMarks')) + '</h1></div><div class="grid g3 anim marks-grid">';
       res[0].forEach(function (c) {
         var graded = c.tasks.filter(function (x) { return x.marks !== null; });
         var rk = risk[c.class_id] || {};
-        html += '<div class="card"><div class="classcard"><div class="top"><div><strong>' + esc(c.course_code) + '</strong> · ' + esc(c.class_name) + '<div class="small muted">' + esc(c.course_name) + '</div></div>' + riskBadge(rk.level, true) + '</div>' +
+        html += '<div class="card"><div class="classcard"><div class="top"><div><strong>' + esc(c.course_code) + '</strong> · ' + esc(c.class_name) + '<div class="small muted">' + esc(c.course_name) + '</div></div></div><div class="small muted" style="margin:8px 0">' + esc(t('overallClassStatus')) + ': ' + riskBadge(rk.level, true) + '</div>' +
           '<div class="kv"><span>' + esc(t('average')) + '</span><strong>' + (rk.average === null || rk.average === undefined ? '—' : rk.average + '%') + '</strong></div>' +
           '<h3 style="margin-top:6px">' + esc(t('progress')) + '</h3>' + (graded.length ? graded.map(function (x) {
             var p = Math.round(x.marks / x.max_marks * 100);
@@ -586,20 +586,41 @@
   L_PAGES.notifications = notificationsPage;
 
   function classPicker(classes, current, base) {
-    return '<select aria-label="' + esc(t('class')) + '" data-act="pickclass" data-base="' + base + '" style="max-width:320px">' + classes.map(function (c) {
-      return '<option value="' + c.class_id + '"' + (c.class_id === current ? ' selected' : '') + '>' + esc(c.course_code + ' · ' + c.class_name) + '</option>';
+    var groups = {};
+    classes.forEach(function (c) { (groups[c.course_code + ' · ' + c.course_name] = groups[c.course_code + ' · ' + c.course_name] || []).push(c); });
+    return '<select aria-label="' + esc(t('class')) + '" data-act="pickclass" data-base="' + base + '" class="class-picker">' + Object.keys(groups).sort().map(function (group) {
+      return '<optgroup label="' + esc(group) + '">' + groups[group].map(function (c) {
+        return '<option value="' + esc(c.class_id) + '"' + (c.class_id === current ? ' selected' : '') + '>' + esc(c.class_name) + '</option>';
+      }).join('') + '</optgroup>';
     }).join('') + '</select>';
   }
 
-  L_PAGES.dashboard = function () {
+  function classContext(c) {
+    return '<div class="class-context"><span class="course-code">' + esc(c.course_code) + '</span><div><strong>' + esc(c.class_name) + '</strong><span>' + esc(c.course_name) + '</span></div></div>';
+  }
+
+  function classSwitcher(classes, current, base) {
+    var groups = {};
+    classes.forEach(function (c) { (groups[c.course_code] = groups[c.course_code] || []).push(c); });
+    return '<div class="course-switcher">' + Object.keys(groups).sort().map(function (code) {
+      var list = groups[code];
+      return '<section class="course-group"><div class="course-group-title"><span class="course-code">' + esc(code) + '</span><div><strong>' + esc(list[0].course_name) + '</strong><small>' + list.length + ' ' + esc(t('classesWord')) + '</small></div></div><div class="class-switches">' + list.map(function (c) {
+        return '<a class="class-switch' + (c.class_id === current ? ' selected' : '') + '" href="' + base + encodeURIComponent(c.class_id) + '"' + (c.class_id === current ? ' aria-current="true"' : '') + '><strong>' + esc(c.class_name) + '</strong><small>' + esc(c.course_code) + ' · ' + c.students + ' ' + esc(t('students').toLowerCase()) + '</small></a>';
+      }).join('') + '</div></section>';
+    }).join('') + '</div>';
+  }
+
+  L_PAGES.dashboard = function (r) {
     return api('lecturerDashboard').then(function (d) {
-      var first = d.classes[0];
-      return (first ? api('classSessions', { class_id: first.class_id }) : Promise.resolve([])).then(function (sess) { return [d, sess]; });
+      var selected = d.classes.filter(function (c) { return c.class_id === r.q.c; })[0] || d.classes[0];
+      return selected ? Promise.all([api('classSessions', { class_id: selected.class_id }), api('classTasks', { class_id: selected.class_id })]).then(function (res) { return [d, res[0], selected, res[1]]; }) : [d, [], null, []];
     }).then(function (res) {
-      var d = res[0], sess = res[1], first = d.classes[0];
+      var d = res[0], sess = res[1], selected = res[2];
       var totalStudents = d.classes.reduce(function (a, c) { return a + c.students; }, 0);
       var avgAtt = d.classes.length ? Math.round(d.classes.reduce(function (a, c) { return a + c.attendance; }, 0) / d.classes.length * 10) / 10 : 0;
       var toGrade = d.classes.reduce(function (a, c) { return a + c.toGrade; }, 0);
+      var classRisk = selected ? d.atRisk.filter(function (s) { return s.class_id === selected.class_id; }) : [];
+      var classDeadlines = res[3].filter(function (x) { return x.due_at >= nowIso(); }).sort(function (a, b) { return a.due_at < b.due_at ? -1 : 1; }).slice(0, 5);
       var html = '<section class="hero-banner"' + bgAttr('bannerLecturer') + '>' + swoosh() + '<div><div class="eyebrow">' + fdate(nowIso().slice(0, 10), true) + '</div><h1>' + esc(t('hello')) + ', ' + esc(S.user.name) + '</h1>' +
         '<p>' + esc(d.atRisk.length ? t('heroLect', { n: d.atRisk.length }) : t('allOnTrack')) + '</p>' +
         '<div class="actions" style="margin:0"><a class="btn btn-primary" href="#/attendance">' + ic('calendar') + esc(t('nAttendanceL')) + arw() + '</a><a class="btn btn-dark" href="#/classes">' + ic('users') + esc(t('viewStudents')) + '</a></div></div>' +
@@ -612,29 +633,25 @@
         (d.atRisk.length ? '<a href="#/classes">' + ic('users') + d.atRisk.length + ' ' + esc(t('needAttention')) + arw() + '</a>' : '') +
         (d.pendingBookings ? '<a href="#/consult">' + ic('chat') + d.pendingBookings + ' ' + esc(t('pendingBookings')) + arw() + '</a>' : '') +
         '<a href="#/attendance">' + ic('calendar') + esc(t('nAttendanceL')) + arw() + '</a></div></section>';
-      html += '<div class="grid g4 anim" style="margin-bottom:18px">' + tile('t-night', d.atRisk.length, t('needAttention'), '#/classes') + tile('t-lime', d.pendingClaims, t('pendingClaims'), '#/claims') +
-        tile('t-brand', toGrade, t('toGrade'), '#/tasks') + tile('t-white', d.pendingBookings, t('pendingBookings'), '#/consult') + '</div>';
+      html += '<section class="section-heading"><div><div class="eyebrow">' + esc(t('myCourses')) + '</div><h2>' + esc(t('chooseClassDashboard')) + '</h2></div><a class="btn btn-ghost btn-sm" href="#/classes">' + esc(t('viewAllClasses')) + '</a></section>' +
+        classSwitcher(d.classes, selected && selected.class_id, '#/dashboard?c=');
+      if (!selected) return html + '<div class="empty">' + esc(t('none')) + '</div>';
+      html += '<section class="class-focus"><div class="section-heading"><div><div class="eyebrow">' + esc(t('selectedClass')) + '</div><h2>' + esc(selected.course_code + ' · ' + selected.class_name) + '</h2><div class="muted">' + esc(selected.course_name) + ' · ' + selected.students + ' ' + esc(t('students').toLowerCase()) + '</div></div><a class="btn btn-ghost btn-sm" href="#/class/' + esc(selected.class_id) + '">' + esc(t('viewStudents')) + '</a></div>' +
+        '<div class="focus-metrics"><div><small>' + esc(t('attendance')) + '</small><strong>' + selected.attendance + '%</strong></div><div><small>' + esc(t('submissionRate')) + '</small><strong>' + selected.submissionRate + '%</strong></div><div><small>' + esc(t('avgMark')) + '</small><strong>' + (selected.averageMark === null ? '—' : selected.averageMark + '%') + '</strong></div><div><small>' + esc(t('needAttention')) + '</small><strong>' + classRisk.length + '</strong></div></div>' +
+        '<div class="action-links class-actions"><a href="#/attendance?c=' + esc(selected.class_id) + '">' + ic('calendar') + esc(t('nAttendanceL')) + '</a><a href="#/tasks?c=' + esc(selected.class_id) + '">' + ic('tasks') + esc(t('nMarking')) + '</a><a href="#/reports?c=' + esc(selected.class_id) + '">' + ic('report') + esc(t('nReports')) + '</a></div></section>';
       // attendance by session (bar chart, chronological, latest highlighted)
       var pts = sess.filter(function (s) { return s.marked; }).slice(0, 8).reverse();
       var chart = pts.length ? '<div class="bars" role="img" aria-label="' + esc(t('attendanceTrend')) + '">' + pts.map(function (s, i) {
         var p = s.students ? Math.round(s.present / s.students * 100) : 0;
         return '<div class="bar' + (i === pts.length - 1 ? ' hl' : '') + '" style="--i:' + i + '"><span class="v">' + p + '%</span><div class="col"><i style="height:' + p + '%"></i></div><span class="d">' + esc(fdate(s.date).split(' ').slice(0, 2).join(' ')) + '</span></div>';
       }).join('') + '</div>' : '<div class="empty">' + esc(t('none')) + '</div>';
-      html += '<div class="grid split"><div class="card"><div class="pagehead" style="margin-bottom:0"><div><h2 style="margin:0">' + ic('chart') + esc(t('attendanceTrend')) + '</h2><div class="small muted">' + (first ? esc(first.course_code + ' · ' + first.class_name) : '') + '</div></div>' +
+      html += '<div class="grid split"><div class="card"><div class="pagehead" style="margin-bottom:0"><div><h2 style="margin:0">' + ic('chart') + esc(t('attendanceTrend')) + '</h2><div class="small muted">' + esc(selected.course_code + ' · ' + selected.class_name) + '</div></div>' +
         '<div class="legend"><span><i></i>' + esc(t('sessions')) + '</span><span><i class="l"></i>' + esc(t('latest')) + '</span></div></div>' + chart + '</div>' +
-        '<div class="card"><h2>' + ic('alert') + esc(t('needAttention')) + '</h2>' + (d.atRisk.length ? '<ul class="list">' + d.atRisk.slice(0, 6).map(function (s) {
+        '<div class="card"><h2>' + ic('alert') + esc(t('needAttention')) + ' · ' + esc(selected.class_name) + '</h2>' + (classRisk.length ? '<ul class="list">' + classRisk.slice(0, 6).map(function (s) {
           return '<li><a class="person" href="#/student/' + s.class_id + '/' + s.student_id + '" style="text-decoration:none;color:inherit"><span class="avatar">' + esc(initials(s.name)) + '</span><div><strong>' + esc(s.name) + '</strong><div class="small muted">' + reasonText(s.reasons) + '</div></div></a>' + riskBadge(s.level) + '</li>';
         }).join('') + '</ul>' : '<div class="empty">' + esc(t('allOnTrack')) + '</div>') + '</div></div>';
-      html += '<h2 style="margin-top:22px">' + ic('users') + esc(t('classesOverview')) + '</h2><div class="grid g2 anim">' + d.classes.map(function (c) {
-        return '<div class="card classcard lift"><div class="top"><div><strong>' + esc(c.course_code) + ' · ' + esc(c.class_name) + '</strong><div class="small muted">' + esc(c.course_name) + ' · ' + c.students + ' ' + esc(t('students').toLowerCase()) + '</div></div>' +
-          '<a class="btn btn-ghost btn-sm" href="#/class/' + c.class_id + '">' + esc(t('viewStudents')) + '</a></div>' +
-          '<div class="ringrow">' + ring(c.attendance, d.threshold, t('attendance')) + '<div>' +
-          '<div class="kv"><span>' + esc(t('submissionRate')) + '</span><strong>' + c.submissionRate + '%</strong></div>' + meter(c.submissionRate, 80) +
-          '<div class="kv"><span>' + esc(t('avgMark')) + '</span><strong>' + (c.averageMark === null ? '—' : c.averageMark + '%') + '</strong></div>' + meter(c.averageMark === null ? 0 : c.averageMark, 50) + '</div></div>' +
-          '<div class="riskbar">' + ['red', 'orange', 'yellow', 'green'].map(function (l) { return c.risk[l] ? '<span class="badge b-dot ' + RISK[l][2] + '">' + c.risk[l] + ' ' + esc(t(RISK[l][0])) + '</span>' : ''; }).join('') + '</div></div>';
-      }).join('') + '</div>';
-      html += '<div class="card" style="margin-top:18px"><h2>' + ic('calendar') + esc(t('upcomingDeadlines')) + '</h2>' + (d.deadlines.length ? '<ul class="list">' + d.deadlines.map(function (x) {
-        return '<li><div><a href="#/task/' + x.task_id + '"><strong>' + esc(x.title) + '</strong></a><div class="small muted">' + esc(x.course_code) + ' · ' + esc(x.class_name) + '</div></div><span class="badge b-blue nowrap">' + fdt(x.due_at) + '</span></li>';
+      html += '<div class="card" style="margin-top:18px"><h2>' + ic('calendar') + esc(t('upcomingDeadlines')) + ' · ' + esc(selected.class_name) + '</h2>' + (classDeadlines.length ? '<ul class="list">' + classDeadlines.map(function (x) {
+        return '<li><div><a href="#/task/' + x.task_id + '"><strong>' + esc(x.title) + '</strong></a><div class="small muted">' + esc(selected.course_code) + ' · ' + esc(selected.class_name) + '</div></div><span class="badge b-blue nowrap">' + fdt(x.due_at) + '</span></li>';
       }).join('') + '</ul>' : '<div class="empty">' + esc(t('noTasks')) + '</div>') + '</div>';
       return html;
     });
@@ -701,11 +718,13 @@
 
   L_PAGES.attendance = function (r) {
     return api('myClasses').then(function (classes) {
-      var cid = r.q.c || (classes[0] && classes[0].class_id);
+      var cid = (classes.filter(function (c) { return c.class_id === r.q.c; })[0] || classes[0] || {}).class_id;
       if (!cid) return '<div class="empty">' + esc(t('none')) + '</div>';
       return api('classSessions', { class_id: cid }).then(function (list) {
+        var current = classes.filter(function (c) { return c.class_id === cid; })[0] || classes[0];
         return '<div class="pagehead"><h1>' + esc(t('nAttendanceL')) + '</h1><div class="row" style="flex:0 1 auto;align-items:center">' + classPicker(classes, cid, '#/attendance?c=') +
           '<button class="btn btn-primary" data-act="newsession" data-c="' + cid + '">' + ic('plus') + ' ' + esc(t('newSession')) + '</button></div></div>' +
+          classContext(current) +
           '<div class="card"><h2>' + esc(t('sessions')) + '</h2><div class="tablewrap"><table><thead><tr><th>' + esc(t('date')) + '</th><th>' + esc(t('topic')) + '</th><th>' + esc(t('attendance')) + '</th><th></th></tr></thead><tbody>' +
           list.map(function (s) {
             return '<tr><td class="nowrap">' + fdate(s.date, true) + '<div class="small muted">' + esc(s.start) + '–' + esc(s.end) + '</div></td><td>' + esc(s.topic) + (s.qr_active ? ' <span class="badge b-green">QR ' + esc(s.qr_active) + '</span>' : '') + '</td>' +
@@ -746,10 +765,12 @@
 
   L_PAGES.tasks = function (r) {
     return api('myClasses').then(function (classes) {
-      var cid = r.q.c || (classes[0] && classes[0].class_id);
+      if (!classes.length) return '<div class="empty">' + esc(t('none')) + '</div>';
+      var cid = (classes.filter(function (c) { return c.class_id === r.q.c; })[0] || classes[0] || {}).class_id;
       return api('classTasks', { class_id: cid }).then(function (list) {
+        var current = classes.filter(function (c) { return c.class_id === cid; })[0] || classes[0];
         return '<div class="pagehead"><h1>' + esc(t('nMarking')) + '</h1><div class="row" style="flex:0 1 auto;align-items:center">' + classPicker(classes, cid, '#/tasks?c=') +
-          '<button class="btn btn-primary" data-act="newtask" data-c="' + cid + '">' + ic('plus') + ' ' + esc(t('newTask')) + '</button></div></div><div class="card">' +
+          '<button class="btn btn-primary" data-act="newtask" data-c="' + cid + '">' + ic('plus') + ' ' + esc(t('newTask')) + '</button></div></div>' + classContext(current) + '<div class="card">' +
           (list.length ? '<div class="tablewrap"><table><thead><tr><th>' + esc(t('taskTitle')) + '</th><th>' + esc(t('due')) + '</th><th>' + esc(t('submissions')) + '</th><th>' + esc(t('graded')) + '</th><th></th></tr></thead><tbody>' +
             list.map(function (x) {
               var past = x.due_at < nowIso();
@@ -790,9 +811,11 @@
 
   L_PAGES.reports = function (r) {
     return api('myClasses').then(function (classes) {
-      var cid = r.q.c || (classes[0] && classes[0].class_id);
+      if (!classes.length) return '<div class="empty">' + esc(t('none')) + '</div>';
+      var cid = (classes.filter(function (c) { return c.class_id === r.q.c; })[0] || classes[0] || {}).class_id;
       var rep = [['attendance', ic('calendar') + '', 'repAttendance'], ['submissions', ic('tasks') + '', 'repSubmissions'], ['pdp', ic('report') + '', 'repPdp']];
-      return '<div class="pagehead"><h1>' + esc(t('nReports')) + '</h1>' + classPicker(classes, cid, '#/reports?c=') + '</div><div class="spot"><div>' + illu('report') + '</div><p>' + esc(t('reportIntro')) + '</p></div><div class="grid g3 anim">' + rep.map(function (x) {
+      var current = classes.filter(function (c) { return c.class_id === cid; })[0] || classes[0];
+      return '<div class="pagehead"><h1>' + esc(t('nReports')) + '</h1>' + classPicker(classes, cid, '#/reports?c=') + '</div>' + classContext(current) + '<div class="spot"><div>' + illu('report') + '</div><p>' + esc(t('reportIntro')) + '</p></div><div class="grid g3 anim">' + rep.map(function (x) {
         var tc = ['t-brand', 't-lime', 't-night'][rep.indexOf(x)]; return '<div class="tile ' + tc + '"><span class="go">' + x[1] + '</span><h3 style="font-size:1.2rem;max-width:16ch;margin-top:30px">' + esc(t(x[2])) + '</h3><button class="btn ' + (tc === 't-lime' ? 'btn-dark' : 'btn-primary') + '" data-act="export" data-k="' + x[0] + '" data-c="' + cid + '">' + ic('download') + ' ' + esc(t('download')) + ' CSV</button></div>';
       }).join('') + '</div>';
     });
@@ -804,15 +827,36 @@
   var A_PAGES = {
     class: L_PAGES.class,
     student: L_PAGES.student,
-    reports: L_PAGES.reports,
     notifications: L_PAGES.notifications
+  };
+  A_PAGES.reports = function (r) {
+    return api('lecturerDashboard').then(function (d) {
+      var classes = d.classes, selected = classes.filter(function (c) { return c.class_id === r.q.c; })[0] || classes[0];
+      var courseCodes = {};
+      classes.forEach(function (c) { courseCodes[c.course_code] = true; });
+      var risk = selected ? d.atRisk.filter(function (s) { return s.class_id === selected.class_id; }) : [];
+      var rep = [['attendance', 'calendar', 'repAttendance'], ['submissions', 'tasks', 'repSubmissions'], ['pdp', 'report', 'repPdp']];
+      var html = '<div class="pagehead"><div><h1>' + esc(t('nReports')) + '</h1><p class="muted">' + esc(t('adminReportIntro')) + '</p></div></div>' +
+        '<section class="report-section"><div class="section-heading"><div><div class="eyebrow">' + esc(t('adminPortal')) + '</div><h2>' + esc(t('reportDashboard')) + '</h2></div></div>' +
+        '<div class="report-kpis"><div><small>' + esc(t('adminCourses')) + '</small><strong>' + Object.keys(courseCodes).length + '</strong></div><div><small>' + esc(t('classesCount')) + '</small><strong>' + classes.length + '</strong></div><div><small>' + esc(t('needAttention')) + '</small><strong>' + d.atRisk.length + '</strong></div><div><small>' + esc(t('toGrade')) + '</small><strong>' + classes.reduce(function (n, c) { return n + c.toGrade; }, 0) + '</strong></div></div></section>';
+      if (!selected) return html + '<div class="empty">' + esc(t('none')) + '</div>';
+      html += '<section class="report-section"><div class="section-heading"><div><div class="eyebrow">' + esc(t('selectedClass')) + '</div><h2>' + esc(t('classReportSnapshot')) + '</h2></div>' + classPicker(classes, selected.class_id, '#/reports?c=') + '</div>' +
+        classContext(selected) + '<div class="report-kpis"><div><small>' + esc(t('students')) + '</small><strong>' + selected.students + '</strong></div><div><small>' + esc(t('attendance')) + '</small><strong>' + selected.attendance + '%</strong></div><div><small>' + esc(t('submissionRate')) + '</small><strong>' + selected.submissionRate + '%</strong></div><div><small>' + esc(t('needAttention')) + '</small><strong>' + risk.length + '</strong></div></div>' +
+        '<div class="report-breakdown"><span>' + esc(t('avgMark')) + ': <strong>' + (selected.averageMark === null ? '—' : selected.averageMark + '%') + '</strong></span><span>' + esc(t('toGrade')) + ': <strong>' + selected.toGrade + '</strong></span><a href="#/class/' + esc(selected.class_id) + '">' + esc(t('viewStudents')) + ' →</a></div></section>' +
+        '<section class="report-section"><div class="section-heading"><div><div class="eyebrow">CSV · ' + esc(selected.course_code + ' · ' + selected.class_name) + '</div><h2>' + esc(t('downloadSection')) + '</h2><p class="muted">' + esc(t('downloadScope')) + '</p></div></div><div class="report-downloads">' + rep.map(function (x) {
+          return '<div class="report-download"><div class="download-icon">' + ic(x[1]) + '</div><div><strong>' + esc(t(x[2])) + '</strong><small>CSV · ' + esc(selected.class_name) + '</small></div><button class="btn btn-brand btn-sm" data-act="export" data-k="' + x[0] + '" data-c="' + esc(selected.class_id) + '">' + ic('download') + ' ' + esc(t('download')) + '</button></div>';
+        }).join('') + '</div></section>';
+      return html;
+    });
   };
   A_PAGES.classes = function () {
     return api('myClasses').then(function (classes) {
+      var byLecturer = {};
+      classes.forEach(function (c) { (byLecturer[c.lecturer_id] = byLecturer[c.lecturer_id] || []).push(c); });
       return '<div class="pagehead"><div><h1>' + esc(t('adminClasses')) + '</h1><p class="muted">' + esc(t('adminClassesSub')) + '</p></div></div>' +
-        '<div class="grid g2">' + classes.map(function (c) {
+        Object.keys(byLecturer).sort().map(function (lecturer) { return '<section class="admin-class-group"><div class="section-heading"><div><div class="eyebrow">' + esc(t('lecturerName')) + ' · ' + esc(lecturer) + '</div><h2>' + byLecturer[lecturer].length + ' ' + esc(t('classesWord')) + '</h2></div></div><div class="grid g2">' + byLecturer[lecturer].map(function (c) {
           return '<a class="card admin-class" href="#/class/' + esc(c.class_id) + '"><span class="eyebrow">' + esc(c.course_code) + ' · ' + esc(c.class_name) + '</span><h2>' + esc(c.course_name) + '</h2><span class="small muted">' + esc(t('lecturerName')) + ': ' + esc(c.lecturer_id) + ' · ' + c.students + ' ' + esc(t('students')) + '</span><span class="badge b-blue">' + esc(t('attendance')) + ' ' + c.attendance + '%</span></a>';
-        }).join('') + '</div>';
+        }).join('') + '</div></section>'; }).join('');
     });
   };
   A_PAGES.dashboard = function () {

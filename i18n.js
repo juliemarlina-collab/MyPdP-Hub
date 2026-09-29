@@ -2,6 +2,11 @@
    To change a word on screen, edit it here. Keep the key (left side) the same. */
 window.MYPDP_I18N = {
   ms: {
+    chooseClassDashboard: 'Pilih kelas untuk dipantau', viewAllClasses: 'Lihat semua kelas', selectedClass: 'Kelas dipilih',
+    reportDashboard: 'Ringkasan laporan institusi', classReportSnapshot: 'Ringkasan kelas untuk laporan',
+    downloadSection: 'Muat turun laporan', downloadScope: 'Fail CSV di bawah merangkumi kelas yang dipilih sahaja.',
+    adminReportIntro: 'Semak ringkasan institusi, pilih kelas, kemudian muat turun laporan CSV.',
+    overallClassStatus: 'Status keseluruhan kelas',
     footerTag: 'Pantau PdP. Bertindak awal.', footerDemo: 'Mod demo · data rekaan', footerLive: 'Portal pembelajaran',
     choosePortal: 'Pilih portal anda', enterPortal: 'Teruskan', adminPortal: 'PORTAL PENTADBIR',
     studentPortalDesc: 'Semak kehadiran, tugasan, markah dan bantuan pensyarah.', lecturerPortalDesc: 'Urus kelas sendiri, semak tuntutan dan bantu pelajar.', adminPortalDesc: 'Pantau kelas institusi, laporan dan persediaan sistem.',
@@ -99,6 +104,11 @@ window.MYPDP_I18N = {
     yourClasses: 'Kelas anda', recentMarks: 'Markah terkini', upcomingConsult: 'Temujanji akan datang', claimsPending: 'tuntutan menunggu semakan'
   },
   en: {
+    chooseClassDashboard: 'Choose a class to monitor', viewAllClasses: 'View all classes', selectedClass: 'Selected class',
+    reportDashboard: 'Institution report overview', classReportSnapshot: 'Class report snapshot',
+    downloadSection: 'Download reports', downloadScope: 'These CSV files cover only the selected class.',
+    adminReportIntro: 'Review the institution overview, choose a class, then download CSV reports.',
+    overallClassStatus: 'Overall class status',
     footerTag: 'Track learning. Act early.', footerDemo: 'Demo mode · fictional data', footerLive: 'Learning portal',
     choosePortal: 'Choose your portal', enterPortal: 'Continue', adminPortal: 'ADMIN PORTAL',
     studentPortalDesc: 'Check attendance, tasks, marks and lecturer support.', lecturerPortalDesc: 'Manage your classes, review claims and support students.', adminPortalDesc: 'Oversee institution classes, reports and system setup.',

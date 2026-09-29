@@ -1,5 +1,12 @@
 # MyPdP Insight – Demo UI update
 
+## Class-focused dashboards and reports (1.1.3)
+Lecturer Dashboard now groups classes by course. Choose a class to see only its attendance chart, students needing attention, deadlines, and quick links for attendance, marking, and reports. Repeated global metric tiles have been removed. Attendance, Tasks, and Lecturer Reports show a clear selected-class banner, and their class picker groups options under course names.
+
+Admin Reports now has an institution overview, a selected-class snapshot, and a separate CSV download section. Every CSV button exports the selected class only. Admin All Classes groups classes by lecturer. On the Student Marks page, cards use three columns on wide screens and the risk badge is labelled as the overall class status; the repeated description in MC Claims has been removed.
+
+To publish, extract this ZIP and upload its five files to the root of the GitHub Pages repository, replacing matching files. `API_URL` remains blank for the fictional-data demo; Apps Script is not required for it.
+
 ## Presentation layout update (1.1.2)
 The demo account samples now span the full page width below the login and feature tiles, with three horizontal account cards on desktop. All page canvases use white; the coloured navigation and animated welcome hero remain intact. The welcome page, signed-in screens and PIN setup page share a bilingual footer. To publish this build, upload the files in this ZIP to the root of the GitHub Pages repository and replace matching files. Keep the `images/` and `apps-script/` folders in their existing locations. `API_URL` remains empty, so the fictional demo works without deploying Apps Script.
 
