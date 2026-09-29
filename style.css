@@ -481,3 +481,79 @@ input[type=file]{font-size:.86rem;max-width:100%}
 .hero-banner.has-photo{background:linear-gradient(100deg,var(--brand) 0%,rgba(59,63,224,.94) 40%,rgba(59,63,224,.55) 70%,rgba(20,121,245,.35) 100%),var(--photo) right center/cover no-repeat}
 .cover .cv-code{margin-top:auto}
 .c-ga{background:linear-gradient(150deg,#12a2a0,#1479f5)} .c-ga .cv-ico{background:rgba(255,255,255,.25)}
+
+/* ================= v1.2 ================= */
+/* "More" button + sheet: phones & tablets only (desktop keeps the full sidebar) */
+.nav-more{display:none}
+.more-sheet,.more-bg{display:none}
+.footer-link{display:inline-flex;align-items:center;gap:6px;color:var(--brand);font-weight:700;text-decoration:none}
+.footer-link:hover{text-decoration:underline}
+@media (max-width:900px){
+  .nav a.m-extra{display:none}
+  .nav{overflow-x:visible;justify-content:space-between}
+  .nav a,.nav-more{flex:1 1 0;min-width:0}
+  .nav-more{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 6px;border:0;border-radius:16px;background:transparent;color:#d4d4fb;font:inherit;font-weight:600;font-size:.64rem;line-height:1.2;cursor:pointer}
+  .nav-more .ico{width:20px;height:20px}
+  .nav-more.active,.nav-more[aria-expanded="true"]{background:var(--lime);color:var(--lime-ink)}
+  .more-bg:not(.hidden){display:block;position:fixed;inset:0;background:rgba(20,20,43,.35);z-index:41}
+  .more-sheet:not(.hidden){display:block;position:fixed;left:10px;right:10px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:42;background:var(--surface);border-radius:24px;box-shadow:var(--shadow-lg);padding:14px;animation:pop .2s both;max-width:520px;margin:0 auto}
+  .ms-user{display:flex;align-items:center;gap:10px;padding:4px 6px 12px;border-bottom:1px solid var(--line)}
+  .ms-user strong{display:block;font-size:.95rem}.ms-user small{color:var(--muted)}
+  .ms-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 0}
+  .ms-grid a{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border-radius:16px;background:var(--surface-2);color:var(--ink);text-decoration:none;font-weight:600;font-size:.78rem;text-align:center}
+  .ms-grid a .ico{width:22px;height:22px;color:var(--brand)}
+  .ms-grid a.active{background:var(--lime);color:var(--lime-ink)} .ms-grid a.active .ico{color:var(--lime-ink)}
+  .ms-grid .count{position:absolute;top:6px;right:8px;min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:#fff;font-size:.62rem;font-weight:800;display:grid;place-items:center;padding:0 5px}
+  .ms-actions{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+  .ms-actions button{flex:1 1 140px;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 12px;border-radius:14px;border:0;background:var(--surface-2);font:inherit;font-weight:700;font-size:.86rem;cursor:pointer;color:var(--ink)}
+  .ms-actions .ms-logout{background:var(--bad-bg);color:var(--bad)}
+  /* the name menu opens to the right when the name sits on the left of a wrapped top bar */
+  .dropdown{left:0;right:auto;max-width:calc(100vw - 32px)}
+}
+@media (max-width:380px){.ms-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* check-in: illustration never wider than its column (it caused sideways scrolling on tablets) */
+.spot-big{min-width:0;max-width:min(360px,100%)}
+.spot-big img,.spot-big .spotimg.ok > img{max-width:100%;height:auto}
+.scan-btn{width:100%;margin:6px 0 4px;justify-content:center}
+.scanbox{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.scan-view{position:relative;width:min(100%,340px);aspect-ratio:1;border-radius:22px;overflow:hidden;background:#0d0d1f}
+.scan-view video{width:100%;height:100%;object-fit:cover;display:block}
+.scan-frame{position:absolute;inset:16%;border:3px solid var(--lime);border-radius:18px;box-shadow:0 0 0 999px rgba(13,13,31,.35)}
+
+/* rotating QR */
+.qr-timer{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted)}
+.qr-timer b{font-family:var(--f-mono);color:var(--brand);min-width:2.6em;text-align:left}
+.qr-bar{width:120px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.qr-bar i{display:block;height:100%;background:var(--brand);border-radius:3px;transition:width .25s linear}
+
+/* AI summary card on the student timeline */
+.insight{margin-top:16px}
+.insight-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.insight-head h2{margin:0;display:flex;align-items:center;gap:8px}
+.insight-src{margin:4px 0 8px}
+.insight-src .badge{display:inline-flex;align-items:center;gap:6px}
+.insight-sum{font-size:1rem;line-height:1.6;margin:8px 0 14px}
+.insight h3{font-size:.95rem;margin:0 0 8px}
+.insight-acts{margin:0 0 12px;padding-left:1.3em;display:grid;gap:10px}
+.insight-acts li{padding-left:4px}
+.insight-acts li span{display:block;margin-bottom:6px}
+
+/* About page */
+.about-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 18px}
+.about-top .logo{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-weight:800}
+.about-page{display:grid;gap:16px}
+.about-hero{border-radius:var(--r-lg);padding:clamp(22px,4vw,40px);background:linear-gradient(135deg,var(--deep-2),var(--brand));color:#fff}
+.about-hero h1{font-size:clamp(1.7rem,4vw,2.6rem);margin:6px 0 10px;color:#fff}
+.about-hero p{max-width:760px;font-size:1.02rem;line-height:1.6;color:#e6e6ff;margin:0 0 16px}
+.about-hero .eyebrow{color:var(--lime)}
+.about-ai h3{font-size:1rem;margin:4px 0 8px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.checks li{display:flex;gap:8px;align-items:flex-start}
+.checks .ico{color:var(--good);margin-top:2px}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.team-member{display:flex;align-items:center;gap:10px;padding:12px;border-radius:16px;background:var(--surface-2)}
+.team-member strong{font-size:.9rem;line-height:1.3}
+
+/* landing: only the hero animates in, so the page never shows empty gaps while it loads or scrolls */
+.landing.anim > *:nth-child(n+2),.landing .bento.anim > *{animation:none}

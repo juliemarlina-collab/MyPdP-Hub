@@ -1,5 +1,16 @@
 # MyPdP Insight – Demo UI update
 
+## Version 1.2 (30 Sep 2026)
+- **Log out on phones & tablets:** the bottom bar now shows 4 main items plus **Lagi / More**, which opens a menu with the other pages, About us, Change PIN and **Log keluar**. The name menu at the top also opens on screen now.
+- **Check-in page:** the illustration no longer makes the page scroll sideways on tablets. New **Imbas kod QR / Scan QR code** button opens the camera inside the app (BarcodeDetector where available, otherwise `vendor/jsQR.min.js`).
+- **Rotating QR code:** the lecturer's QR screen changes the code every 30 seconds (the previous code is still accepted for 20 seconds), so a code shared on WhatsApp stops working almost at once. Closing the QR screen ends the check-in window.
+- **AI summary:** the student timeline has a **Ringkasan & cadangan tindakan** card. With `AI_API_KEY` (an Anthropic API key) set under Apps Script > Project Settings > Script properties, the summary and 2–3 suggested actions are written by Claude. Only numbers (attendance, tasks, marks) are sent, never the name or ID. Without the key (and in demo mode) a rule-based summary is shown and clearly labelled "tanpa AI". Each suggestion can be saved as a follow-up.
+- **About us page** (`#/about`, also linked in the footer and the More menu): the problem, the team (Kumpulan 2), how AI was used, and data privacy.
+- Landing page: the ★★★★★ row is removed and sections below the hero no longer fade in, so there are no blank gaps while scrolling.
+
+**To publish:** upload `index.html`, `app.js`, `core.js`, `i18n.js`, `style.css`, `README.md` and the `vendor/` folder to the repository root. Paste `apps-script/Code.gs` and `apps-script/Core.gs` into the Apps Script project and deploy a new version (it will ask for permission to connect to an external service, needed for the AI summary).
+
+
 ## Hero assets restored (1.1.4)
 The welcome hero image and animated flip cards already work on the live page. `config.js` previously left `bannerLecturer` and `bannerStudent` empty, so the dashboard greeting banners showed only their gradients. Both slots now point to the included `images/banner-lecturer.png` and `images/banner-student.png`. The images remain confined to greeting banners; the original layout and navigation colours are unchanged. `index.html` loads a fresh configuration version to avoid stale browser caching.
 

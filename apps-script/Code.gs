@@ -21,7 +21,8 @@ function doPost(e) {
   try {
     var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     var action = String(body.action || '');
-    lock.waitLock(20000); // one write at a time keeps the Sheet consistent
+    var readOnly = { studentInsight: true };                // may wait for the AI model: don't block other users
+    if (!readOnly[action]) lock.waitLock(20000); // one write at a time keeps the Sheet consistent
     var db = sheetDB_();
     if (action === 'login') {
       var u = MyPdPCore.handle(db, null, 'login', body.payload || {});
@@ -129,6 +130,7 @@ function sheetDB_() {
     now: function () { return new Date(); },
     kvGet: function (k) { return CacheService.getScriptCache().get('kv_' + k); },            // login attempt counter
     kvSet: function (k, v, ttl) { CacheService.getScriptCache().put('kv_' + k, String(v), Math.max(1, ttl || 900)); },
+    ai: PropertiesService.getScriptProperties().getProperty('AI_API_KEY') ? aiInsight_ : null,   // optional AI summary
     hash: function (text) {
       var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text, Utilities.Charset.UTF_8);
       return bytes.map(function (b) { var v = (b < 0 ? b + 256 : b).toString(16); return v.length === 1 ? '0' + v : v; }).join('');
@@ -331,4 +333,40 @@ function validateImport() {
   var old = ss.getSheetByName('Validation'); if (old) ss.deleteSheet(old);
   var vs = ss.insertSheet('Validation'); vs.getRange(1, 1, out.length, 4).setValues(out); vs.getRange(1, 1, 1, 4).setFontWeight('bold'); vs.setFrozenRows(1);
   try { SpreadsheetApp.getUi().alert(issues.length ? issues.length + ' problem(s) found. See the Validation tab.' : 'No problems found.'); } catch (e) { Logger.log(issues.length); }
+}
+
+
+// ---------------- Optional AI summary (studentInsight) ----------------
+// Turn on: Project Settings > Script properties > add AI_API_KEY (an Anthropic API key).
+// Optional: AI_MODEL (default below). Leave AI_API_KEY empty and the app uses its rule-based summary instead.
+// Privacy: only the numbers in `facts` are sent (attendance, task titles, marks, risk level). No name, ID or e-mail.
+var AI_DEFAULT_MODEL = 'claude-haiku-4-5';
+function aiInsight_(facts) {
+  var props = PropertiesService.getScriptProperties();
+  var key = props.getProperty('AI_API_KEY');
+  if (!key) return null;
+  var model = props.getProperty('AI_MODEL') || AI_DEFAULT_MODEL;
+  var factsJson = JSON.stringify(facts);
+  var cacheKey = 'ai_' + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, model + factsJson)).slice(0, 40);
+  var cache = CacheService.getScriptCache(), hit = cache.get(cacheKey);
+  if (hit) return JSON.parse(hit);
+  var system = 'You help a lecturer at a Malaysian polytechnic follow up students at risk. ' +
+    'Use ONLY the facts given. Do not invent reasons, family details or diagnoses. Be kind, practical and brief. ' +
+    'Reply with JSON only: {"summary_ms":"...","summary_en":"...","actions":[{"ms":"...","en":"..."}]} ' +
+    '— summary: 2 sentences in Bahasa Melayu and the same in English; actions: 2 or 3 concrete next steps the lecturer can take this week.';
+  var res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+    payload: JSON.stringify({ model: model, max_tokens: 600, system: system, messages: [{ role: 'user', content: 'Student facts (JSON): ' + factsJson }] })
+  });
+  if (res.getResponseCode() !== 200) { console.warn('AI call failed: ' + res.getResponseCode() + ' ' + res.getContentText().slice(0, 300)); return null; }
+  var text = (JSON.parse(res.getContentText()).content || []).map(function (c) { return c.text || ''; }).join('');
+  var m = text.match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  var j = JSON.parse(m[0]);
+  if (!j.summary_ms || !j.summary_en || !j.actions || !j.actions.length) return null;
+  var out = { summary: { ms: String(j.summary_ms), en: String(j.summary_en) }, model: model,
+    actions: j.actions.slice(0, 3).map(function (a) { return { ms: String(a.ms || a.en || ''), en: String(a.en || a.ms || '') }; }) };
+  cache.put(cacheKey, JSON.stringify(out), 6 * 3600);   // same facts = same answer for 6 hours (saves API cost)
+  return out;
 }

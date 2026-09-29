@@ -83,7 +83,11 @@
     leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10z"/><path d="M2 21c0-3 1.9-5.4 5.1-6"/>',
     globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
     book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
-    spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>'
+    spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>',
+    more: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+    camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
+    ai: '<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>'
   };
   // Text-free spot illustrations (so the BM/EN switch never leaves words inside an image)
   var ILLU = {
@@ -205,8 +209,14 @@
     var f = bg.querySelector('input,select,textarea,button'); if (f) f.focus();
     return bg;
   }
-  function closeModal() { var m = document.getElementById('modal'); if (m) m.remove(); if (qrTimer) { clearInterval(qrTimer); qrTimer = null; } }
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+  function closeModal() {
+    var m = document.getElementById('modal'); if (m) m.remove();
+    if (qrTimer) { clearInterval(qrTimer); qrTimer = null; }
+    if (qrSession) { var sid = qrSession; qrSession = null; api('closeQR', { session_id: sid }).catch(function () {}); }
+    stopScan();
+  }
+  function closeMore() { var ms = document.getElementById('moresheet'), mb = document.getElementById('morebg'), b = document.querySelector('.nav-more'); if (ms) ms.classList.add('hidden'); if (mb) mb.classList.add('hidden'); if (b) b.setAttribute('aria-expanded', 'false'); }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeModal(); closeMore(); } });
 
   // ---------- API ----------
   function api(action, payload) {
@@ -254,6 +264,8 @@
   var NAV_L = [['dashboard', ic('home'), 'nDashboard'], ['classes', ic('book'), 'myCourses'], ['attendance', ic('calendar'), 'nAttendanceL'], ['claims', ic('med'), 'nClaimsL'], ['tasks', ic('tasks'), 'nMarking'], ['consult', ic('chat'), 'nConsult'], ['reports', ic('report'), 'nReports'], ['notifications', ic('bell'), 'nNotif']];
   var NAV_A = [['dashboard', ic('home'), 'nDashboard'], ['classes', ic('book'), 'adminClasses'], ['reports', ic('report'), 'nReports'], ['setup', ic('gear'), 'adminSetup'], ['notifications', ic('bell'), 'nNotif']];
 
+  // phones & tablets: 4 main items in the bottom bar, the rest under "Lagi" (More)
+  var PRIMARY = { student: ['dashboard', 'checkin', 'attendance', 'tasks'], lecturer: ['dashboard', 'attendance', 'claims', 'tasks'], admin: ['dashboard', 'classes', 'reports', 'setup'] };
   function langToggle() {
     return '<div class="lang" role="group" aria-label="' + esc(t('language')) + '">' +
       '<button data-act="lang" data-v="ms" aria-pressed="' + (lang === 'ms') + '">BM</button><button data-act="lang" data-v="en" aria-pressed="' + (lang === 'en') + '">EN</button></div>';
@@ -261,19 +273,23 @@
 
   function siteFooter() {
     return '<footer class="site-footer"><div class="footer-brand"><span class="footer-mark">PdP</span><span><strong>MyPdP Insight</strong><small>' + esc(t('footerTag')) + '</small></span></div>' +
-      '<div class="footer-meta"><span>' + esc(CFG.INSTITUTION || 'MyPdP Insight') + '</span><span>© ' + new Date().getFullYear() + ' MyPdP Insight</span><span>' + esc(t(LIVE ? 'footerLive' : 'footerDemo')) + '</span></div></footer>';
+      '<div class="footer-meta"><a class="footer-link" href="#/about">' + ic('info') + esc(t('aboutNav')) + '</a><span>' + esc(CFG.INSTITUTION || 'MyPdP Insight') + '</span><span>© ' + new Date().getFullYear() + ' MyPdP Insight</span><span>' + esc(t(LIVE ? 'footerLive' : 'footerDemo')) + '</span></div></footer>';
   }
 
   function shell(active, content) {
     var nav = S.user.role === 'admin' ? NAV_A : (isLect() ? NAV_L : NAV_S);
-    var cur = nav.filter(function (n) { return n[0] === active; })[0] || nav[0];
+    var cur = nav.filter(function (n) { return n[0] === active; })[0] || (active === 'about' ? ['about', '', 'aboutNav'] : nav[0]);
+    var prim = PRIMARY[S.user.role] || PRIMARY.lecturer;
+    var extras = nav.filter(function (n) { return prim.indexOf(n[0]) < 0; });
+    var extraActive = active === 'about' || extras.some(function (n) { return n[0] === active; });
     return '<div class="app role-' + esc(S.user.role) + '"><aside class="side"><div class="side-in">' +
       '<a class="logo" href="#/dashboard"><span class="logo-mark">PdP</span><span>MyPdP Insight<small>' + esc(t(S.user.role === 'student' ? 'studentPortal' : S.user.role === 'admin' ? 'adminPortal' : 'lecturerPortal')) + '</small></span></a>' +
       '<nav class="nav" aria-label="Menu">' + nav.map(function (n) {
         var on = active === n[0];
-        return '<a href="#/' + n[0] + '" class="' + (on ? 'active' : '') + '"' + (on ? ' aria-current="page"' : '') + '>' + n[1] + '<span>' + esc(t(n[2])) + '</span>' +
+        return '<a href="#/' + n[0] + '" class="' + (on ? 'active' : '') + (prim.indexOf(n[0]) < 0 ? ' m-extra' : '') + '"' + (on ? ' aria-current="page"' : '') + '>' + n[1] + '<span>' + esc(t(n[2])) + '</span>' +
           (n[0] === 'notifications' && S.unread ? '<span class="count">' + S.unread + '</span>' : '') + '</a>';
-      }).join('') + '</nav>' +
+      }).join('') +
+      '<button type="button" class="nav-more' + (extraActive ? ' active' : '') + '" data-act="moremenu" aria-haspopup="true" aria-expanded="false" aria-controls="moresheet">' + ic('more') + '<span>' + esc(t('more')) + '</span>' + (S.unread ? '<span class="count">' + S.unread + '</span>' : '') + '</button></nav>' +
       '<div class="side-foot"><div class="side-card"><strong>' + esc(t('threshold')) + ': ' + (S.settings.threshold || 80) + '%</strong>' + esc(t('sideTip')) + '</div>' +
       '<button class="side-btn" data-act="logout">' + ic('logout') + esc(t('logout')) + '</button></div></div></aside>' +
       '<main class="main" id="main"><div class="topbar"><span class="crumb">MyPdP / ' + esc(t(cur[2])) + '</span><span class="portal-chip">' + esc(t(S.user.role + 'Portal')) + '</span>' + (LIVE ? '' : '<span class="demo-chip">' + esc(t('demoMode')) + '</span>') +
@@ -283,7 +299,13 @@
       '<div class="dropdown hidden" id="umenu"><div class="small muted" style="padding:6px 10px">' + esc(S.user.user_id) + ' · ' + esc(t(S.user.role)) + '</div>' +
       '<button data-act="changepin">' + ic('key') + esc(t('changePin')) + '</button>' + (LIVE ? '' : '<button data-act="demoreset">' + ic('reset') + esc(t('demoReset')) + '</button>') +
       '<button data-act="logout">' + ic('logout') + esc(t('logout')) + '</button></div></div></div>' +
-      '<div class="anim" id="page">' + content + '</div>' + siteFooter() + '</main></div>';
+      '<div class="anim" id="page">' + content + '</div>' + siteFooter() + '</main>' +
+      '<div class="more-bg hidden" id="morebg" data-act="moremenu"></div><div class="more-sheet hidden" id="moresheet" role="menu" aria-label="' + esc(t('moreMenu')) + '">' +
+      '<div class="ms-user"><span class="avatar">' + esc(initials(S.user.name)) + '</span><div><strong>' + esc(S.user.name) + '</strong><small>' + esc(S.user.user_id) + ' · ' + esc(t(S.user.role)) + '</small></div></div>' +
+      '<div class="ms-grid">' + extras.map(function (n) { return '<a role="menuitem" href="#/' + n[0] + '"' + (active === n[0] ? ' class="active"' : '') + '>' + n[1] + '<span>' + esc(t(n[2])) + '</span>' + (n[0] === 'notifications' && S.unread ? '<span class="count">' + S.unread + '</span>' : '') + '</a>'; }).join('') +
+      '<a role="menuitem" href="#/about"' + (active === 'about' ? ' class="active"' : '') + '>' + ic('info') + '<span>' + esc(t('aboutNav')) + '</span></a></div>' +
+      '<div class="ms-actions"><button role="menuitem" data-act="changepin">' + ic('key') + esc(t('changePin')) + '</button>' + (LIVE ? '' : '<button role="menuitem" data-act="demoreset">' + ic('reset') + esc(t('demoReset')) + '</button>') +
+      '<button role="menuitem" class="ms-logout" data-act="logout">' + ic('logout') + esc(t('logout')) + '</button></div></div></div>';
   }
 
   var renderSeq = 0;
@@ -293,6 +315,7 @@
     document.documentElement.lang = lang;
     var r = route();
     if (r.name === 'checkin' && r.args[0] && !S.user) tset('mypdp_pending_checkin', r.args[0]);
+    if (r.name === 'about' && (!S.user || !S.token)) { app.innerHTML = '<div class="landing">' + aboutView(true) + siteFooter() + '</div>'; animateIn(app); window.scrollTo(0, 0); return; }
     if (!S.user || !S.token) { if (r.name !== 'login') { history.replaceState(null, '', '#/login'); } app.innerHTML = loginView(); animateIn(app); applyBackgrounds(app); startHero(); return; }
     if (S.user.must_change_pin) { app.innerHTML = pinSetupView(); return; }
     if (r.name === 'login' || !r.name) { history.replaceState(null, '', '#/dashboard'); r = route(); }
@@ -301,6 +324,7 @@
     var pages = S.user.role === 'admin' ? A_PAGES : (isLect() ? L_PAGES : S_PAGES);
     var page = pages[r.name] || pages.dashboard;
     var activeName = pages[r.name] ? ({ 'class': 'classes', student: 'classes', session: 'attendance', task: 'tasks' }[r.name] || r.name) : 'dashboard';
+    if (S.user.role === 'student' && r.name === 'student') activeName = 'dashboard';
     app.innerHTML = shell(activeName, '<div class="spinner">' + esc(t('loading')) + '</div>');
     var seq = ++renderSeq;
     api('me').then(function (m) {
@@ -380,12 +404,12 @@
     var mq = feats.concat(feats).map(function (f) { return '<span>' + ic('spark') + esc(f) + '</span>'; }).join('');
     return '<div class="landing anim">' +
       '<section class="sky"' + bgAttr('hero') + '><div class="sky-nav"><span class="logo"><span class="logo-mark">PdP</span><span>MyPdP Insight</span></span>' +
-      '<nav class="links" aria-label="Sections"><a href="#/login" data-act="scrollto" data-v="features">' + esc(t('landFeatures')) + '</a><a href="#/login" data-act="scrollto" data-v="loginbox">' + esc(t('login')) + '</a><a href="#/login" data-act="scrollto" data-v="about">' + esc(t('landHow')) + '</a></nav>' +
+      '<nav class="links" aria-label="Sections"><a href="#/login" data-act="scrollto" data-v="features">' + esc(t('landFeatures')) + '</a><a href="#/login" data-act="scrollto" data-v="loginbox">' + esc(t('login')) + '</a><a href="#/login" data-act="scrollto" data-v="about">' + esc(t('landHow')) + '</a><a href="#/about">' + esc(t('aboutNav')) + '</a></nav>' +
       '<div class="right-tools">' + langToggle() + '</div></div>' +
       '<div class="sky-hero"><h1>' + esc(t('landH1a')) + '<span>' + esc(t('landH1b')) + '</span></h1><p>' + esc(t('landP')) + '</p>' +
       '<div class="sky-cta">' + (LIVE ? '' : '<button class="btn btn-ghost" data-act="demologin" data-v="L004">' + esc(t('viewDemo')) + '</button>') +
       '<button class="btn btn-primary" data-act="scrollto" data-v="loginbox">' + esc(t('getStarted')) + arw() + '</button></div></div>' +
-      '<div class="hc-stage" id="hcstage"><div class="hc-arc" id="hcarc">' + arc + '</div></div><div class="rated">' + esc(t('landRated')) + '<span class="stars" aria-hidden="true">★★★★★</span><span class="small">' + esc(t('flipHint')) + '</span></div>' +
+      '<div class="hc-stage" id="hcstage"><div class="hc-arc" id="hcarc">' + arc + '</div></div><div class="rated">' + esc(t('landRated')) + '<span class="small">' + esc(t('flipHint')) + '</span></div>' +
       '<div class="cloud c1" aria-hidden="true"></div><div class="cloud c2" aria-hidden="true"></div><div class="cloud c3" aria-hidden="true"></div><div class="cloud c4" aria-hidden="true"></div></section>' +
       '<div class="marquee" id="features" aria-hidden="true"><div class="track">' + mq + '</div></div>' +
       '<div class="about" id="about"><div class="eyebrow">' + esc(t('landAbout')) + '</div><h2>' + esc(t('about1')) + ' <span class="pill-ico" style="background:var(--sky-2);color:#fff">' + ic('pie') + '</span> ' + esc(t('about2')) +
@@ -564,6 +588,7 @@
   S_PAGES.checkin = function (r) {
     var code = (r.args[0] || '').toUpperCase();
     var html = '<div class="pagehead"><h1>' + esc(t('checkinTitle')) + '</h1></div><div class="grid g2 anim" style="align-items:center"><div class="card"><p>' + esc(t('checkinHint')) + '</p>' +
+      '<button type="button" class="btn btn-dark scan-btn" data-act="scanqr">' + ic('camera') + ' ' + esc(t('scanQR')) + '</button>' +
       '<form data-form="checkin"><label for="ci-code">' + esc(t('code')) + '</label><input id="ci-code" name="code" type="text" maxlength="6" autocapitalize="characters" value="' + esc(code) + '" style="font-size:1.6rem;letter-spacing:.3em;text-transform:uppercase;text-align:center" required>' +
       '<div class="actions"><button class="btn btn-primary" type="submit" style="width:100%">' + esc(t('submit')) + '</button></div></form><div id="ci-result"></div></div><div class="spot-big">' + illu('qr') + '</div></div>';
     if (code) pageAfter = function () { var f = document.querySelector('[data-form="checkin"]'); if (f) FORMS.checkin(f); };
@@ -706,6 +731,8 @@
         '<div class="tile t-night"><div class="big">' + cnt(s.risk.missing) + '</div><div class="lbl">' + esc(t('tMissing')) + '</div></div>' +
         '<div class="tile t-lime"><div class="big">' + (s.risk.average === null ? '—' : cnt(s.risk.average, '%')) + '</div><div class="lbl">' + esc(t('average')) + '</div></div>' +
         '<div class="tile t-white"><div>' + riskBadge(s.risk.level) + '</div><div class="lbl">' + (reasonText(s.risk.reasons) || '—') + '</div></div></div>' +
+        '<section class="card insight"><div class="insight-head"><h2>' + ic('ai') + ' ' + esc(t('insightTitle')) + '</h2><button class="btn btn-primary btn-sm" data-act="insight" data-c="' + esc(d.cls.class_id) + '" data-s="' + esc(st.user_id) + '">' + ic('ai') + '<span> ' + esc(t('insightBtn')) + '</span></button></div>' +
+        '<div id="insight-body"><p class="muted">' + esc(t('insightIntro')) + '</p></div></section>' +
         '<div class="grid g2 anim" style="margin-top:16px"><div class="card"><h2>' + ic('clock') + ' ' + esc(t('timeline')) + '</h2>' + (d.events.length ? '<ul class="timeline">' + d.events.map(function (e) {
           var b = e.kind === 'attendance' ? attBadge(e.status) : e.kind === 'submission' ? taskBadge(e.status) : e.kind === 'claim' ? claimBadge(e.status) : e.kind === 'consult' ? bookBadge(e.status) : '';
           return '<li class="k-' + e.kind + '"><div class="small muted">' + fdate(e.date) + ' · ' + esc(t(EV[e.kind])) + '</div><div>' + esc(e.text) + ' ' + b + '</div></li>';
@@ -877,8 +904,67 @@
     return Promise.resolve('<div class="pagehead"><div><h1>' + esc(t('adminSetup')) + '</h1><p class="muted">' + esc(t('adminSetupSub')) + '</p></div></div><div class="card"><ol class="action-list"><li>' + esc(t('adminStep1')) + '</li><li>' + esc(t('adminStep2')) + '</li><li>' + esc(t('adminStep3')) + '</li></ol><p class="small muted">' + esc(t('adminSetupNote')) + '</p></div>');
   };
 
+  // ================= ABOUT (public + signed in) =================
+  var TEAM = ['Dina Izzaty binti Moohyiddin', 'Hairulamri bin Kasim', 'Ho Swee Chin', 'Julie Marlina binti Hasan', 'Khairul Nazry bin Talib'];
+  function aboutView(pub) {
+    var li = function (keys) { return '<ul class="checks">' + keys.map(function (k) { return '<li>' + ic('check') + '<span>' + esc(t(k)) + '</span></li>'; }).join('') + '</ul>'; };
+    return (pub ? '<div class="about-top"><a class="logo" href="#/login"><span class="logo-mark">PdP</span><span>MyPdP Insight</span></a>' + langToggle() + '</div>' : '') +
+      '<div class="about-page anim">' +
+      '<section class="about-hero"><div class="eyebrow">' + esc(t('aboutVersion')) + '</div><h1>' + esc(t('aboutTitle')) + '</h1><p>' + esc(t('aboutLead')) + '</p>' +
+      (pub ? '<a class="btn btn-primary" href="#/login">' + esc(t('aboutBack')) + arw() + '</a>' : '') + '</section>' +
+      '<div class="grid g2"><section class="card"><h2>' + ic('alert') + ' ' + esc(t('aboutProblem')) + '</h2><p>' + esc(t('aboutProblemText')) + '</p></section>' +
+      '<section class="card"><h2>' + ic('shield') + ' ' + esc(t('aboutPrivacy')) + '</h2><p>' + esc(t('aboutPrivacyText')) + '</p></section></div>' +
+      '<section class="card about-ai"><h2>' + ic('ai') + ' ' + esc(t('aboutAiTitle')) + '</h2><div class="grid g2"><div><h3>' + esc(t('aboutAiBuild')) + '</h3>' + li(['aboutAi1', 'aboutAi2', 'aboutAi3', 'aboutAi4']) + '</div>' +
+      '<div><h3>' + esc(t('aboutAiProduct')) + '</h3>' + li(['aboutAi5', 'aboutAi6']) + '</div></div><p class="small muted">' + esc(t('aboutAiTool')) + '</p></section>' +
+      '<section class="card"><h2>' + ic('users') + ' ' + esc(t('aboutTeam')) + '</h2><div class="team-grid">' + TEAM.map(function (n) {
+        return '<div class="team-member"><span class="avatar">' + esc(initials(n)) + '</span><strong>' + esc(n) + '</strong></div>';
+      }).join('') + '</div></section></div>';
+  }
+  [S_PAGES, L_PAGES, A_PAGES].forEach(function (P) { P.about = function () { return Promise.resolve(aboutView(false)); }; });
+
+  // ================= QR SCANNER (student check-in) =================
+  var scanStream = null, scanLoop = null;
+  function stopScan() {
+    if (scanLoop) { cancelAnimationFrame(scanLoop); scanLoop = null; }
+    if (scanStream) { scanStream.getTracks().forEach(function (tr) { tr.stop(); }); scanStream = null; }
+  }
+  function loadJsQR() {
+    if (window.jsQR) return Promise.resolve(window.jsQR.default || window.jsQR);
+    return new Promise(function (res, rej) {
+      var sc = document.createElement('script'); sc.src = 'vendor/jsQR.min.js?v=1.4.0';
+      sc.onload = function () { var j = window.jsQR && (window.jsQR.default || window.jsQR); typeof j === 'function' ? res(j) : rej(); }; sc.onerror = rej;
+      document.head.appendChild(sc);
+    });
+  }
+  function codeFromScan(text) {
+    var m = String(text || '').match(/#\/checkin\/([A-Za-z0-9]{4,12})/) || String(text || '').trim().match(/^([A-Za-z0-9]{6})$/);
+    return m ? m[1].toUpperCase() : '';
+  }
+  function makeDetector() {
+    if ('BarcodeDetector' in window) {
+      return window.BarcodeDetector.getSupportedFormats().then(function (f) {
+        if (f.indexOf('qr_code') < 0) throw 0;
+        var bd = new window.BarcodeDetector({ formats: ['qr_code'] });
+        return function (video) { return bd.detect(video).then(function (r) { return r[0] ? r[0].rawValue : ''; }); };
+      }).catch(function () { return jsQRDetector(); });
+    }
+    return jsQRDetector();
+  }
+  function jsQRDetector() {
+    return loadJsQR().then(function (jsQR) {
+      var cv = document.createElement('canvas'), cx = cv.getContext('2d', { willReadFrequently: true });
+      return function (video) {
+        var w = video.videoWidth, h = video.videoHeight; if (!w || !h) return Promise.resolve('');
+        var k = Math.min(1, 640 / Math.max(w, h)); cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+        cx.drawImage(video, 0, 0, cv.width, cv.height);
+        var r = jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height, { inversionAttempts: 'dontInvert' });
+        return Promise.resolve(r ? r.data : '');
+      };
+    });
+  }
+
   // ================= ACTIONS (clicks) =================
-  var qrTimer = null;
+  var qrTimer = null, qrSession = null;
   var ACTIONS = {
     lang: function (el) { lang = el.dataset.v; sset('mypdp_lang', lang); render(); },
     chooseportal: function (el) {
@@ -891,6 +977,62 @@
     flipcard: function (el) { el.classList.toggle('flipped'); el.classList.add('held'); setTimeout(function () { el.classList.remove('held'); }, 4000); },
     scrollto: function (el) { var x = document.getElementById(el.dataset.v); if (x) { x.scrollIntoView({ behavior: 'smooth', block: 'start' }); var f = x.querySelector('input'); if (f) setTimeout(function () { f.focus({ preventScroll: true }); }, 500); } },
     usermenu: function () { var m = document.getElementById('umenu'); if (m) m.classList.toggle('hidden'); },
+    moremenu: function () {
+      var sh = document.getElementById('moresheet'), bg = document.getElementById('morebg'), b = document.querySelector('.nav-more');
+      if (!sh) return;
+      var open = sh.classList.toggle('hidden') === false;
+      if (bg) bg.classList.toggle('hidden', !open);
+      if (b) b.setAttribute('aria-expanded', open);
+      if (open) { var f = sh.querySelector('a,button'); if (f) f.focus(); }
+    },
+    scanqr: function () {
+      modal('<div class="scanbox"><h2>' + ic('camera') + ' ' + esc(t('scanTitle')) + '</h2><div class="scan-view"><video id="scan-v" playsinline muted autoplay></video><i class="scan-frame"></i></div>' +
+        '<p class="small muted" id="scan-msg">' + esc(t('scanHelp')) + '</p><div class="actions"><button class="btn btn-ghost" type="button" data-act="closemodal">' + esc(t('cancel')) + '</button></div></div>');
+      var video = document.getElementById('scan-v'), note = document.getElementById('scan-msg');
+      function failCam() { if (note) { note.textContent = t('scanNoCamera'); note.className = 'alert alert-red'; } stopScan(); }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return failCam();
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false }).then(function (stream) {
+        if (!document.getElementById('scan-v')) { stream.getTracks().forEach(function (tr) { tr.stop(); }); return; }
+        scanStream = stream; video.srcObject = stream;
+        var p = video.play(); if (p && p.catch) p.catch(function () {});
+        return makeDetector().then(function (detect) {
+          var last = 0, busyD = false;
+          (function tick(ts) {
+            if (!scanStream) return;
+            scanLoop = requestAnimationFrame(tick);
+            if (busyD || ts - last < 180 || video.readyState < 2) return;
+            last = ts; busyD = true;
+            detect(video).then(function (text) {
+              busyD = false;
+              var code = codeFromScan(text);
+              if (!code || !scanStream) return;
+              stopScan(); closeModal();
+              var inp = document.getElementById('ci-code'), f = document.querySelector('[data-form="checkin"]');
+              if (inp && f) { inp.value = code; toast(t('scanFound') + ': ' + code); FORMS.checkin(f); }
+            }, function () { busyD = false; });
+          })(0);
+        });
+      }).catch(failCam);
+    },
+    insight: function (el) {
+      var body = document.getElementById('insight-body');
+      if (!body) return;
+      el.disabled = true;
+      body.innerHTML = '<div class="spinner" style="padding:22px">' + esc(t('insightLoading')) + '</div>';
+      api('studentInsight', { class_id: el.dataset.c, student_id: el.dataset.s }).then(function (d) {
+        el.disabled = false; el.lastChild.textContent = ' ' + t('insightAgain');
+        var ai = d.source === 'ai';
+        body.innerHTML = '<div class="insight-src"><span class="badge ' + (ai ? 'b-lime' : 'b-blue') + '">' + ic(ai ? 'ai' : 'info') + ' ' + esc(ai ? t('insightAi') + (d.model ? ' · ' + d.model : '') : t('insightRules')) + '</span></div>' +
+          '<p class="insight-sum">' + esc(lang === 'ms' ? d.summary.ms : d.summary.en) + '</p><h3>' + esc(t('suggested')) + '</h3><ol class="insight-acts">' + d.actions.map(function (a) {
+            var txt = lang === 'ms' ? a.ms : a.en;
+            return '<li><span>' + esc(txt) + '</span><button class="btn btn-ghost btn-sm" data-act="useaction" data-c="' + esc(el.dataset.c) + '" data-s="' + esc(el.dataset.s) + '" data-text="' + esc(txt) + '">' + ic('plus') + ' ' + esc(t('useAsFollowup')) + '</button></li>';
+          }).join('') + '</ol><p class="small muted">' + esc(t(ai ? 'insightPrivacy' : 'insightRulesNote')) + '</p>';
+      }, function (e) { el.disabled = false; body.innerHTML = '<div class="alert alert-red">' + esc(msg(e)) + '</div>'; });
+    },
+    useaction: function (el) {
+      ACTIONS.intervene(el);
+      var n = document.getElementById('iv-n'); if (n) n.value = el.dataset.text || '';
+    },
     logout: function () { logout(); },
     demoreset: function () { demoDb.reset(); toast(t('saved')); render(); },
     demologin: function (el) { doLogin(el.dataset.v, '1234'); },
@@ -926,17 +1068,34 @@
         '<label for="ns-t">' + esc(t('topic')) + '</label><input id="ns-t" name="topic" type="text" maxlength="150">' + formBtns() + '</form>');
     },
     showqr: function (el) {
-      api('openQR', { session_id: el.dataset.v }).then(function (d) {
-        var url = location.href.split('#')[0] + '#/checkin/' + d.code;
-        modal('<div class="qrbox"><h2>' + esc(t('checkinTitle')) + '</h2><div id="qr"></div><div class="code">' + esc(d.code) + '</div><div class="muted small">' + esc(t('qrValid', { m: d.minutes })) + ' · <span id="qr-left"></span></div>' +
-          '<div class="small muted" style="word-break:break-all">' + esc(url) + '</div><div class="actions"><button class="btn btn-ghost" data-act="closeqr">' + esc(t('close')) + '</button></div></div>');
-        try { new QRCode(document.getElementById('qr'), { text: url, width: 240, height: 240 }); } catch (e) { /* QR library not loaded: the code is still shown */ }
-        var left = document.getElementById('qr-left');
+      var sid = el.dataset.v, base = location.href.split('#')[0], nextAt = 0, per = 30, rotating = false;
+      function paint(d) {
+        var box = document.getElementById('qr'); if (!box) return;
+        var url = base + '#/checkin/' + d.code;
+        box.innerHTML = '';
+        try { new QRCode(box, { text: url, width: 240, height: 240 }); } catch (e) { /* QR library not loaded: the code is still shown */ }
+        document.getElementById('qr-code').textContent = d.code;
+        document.getElementById('qr-url').textContent = url;
+        per = d.rotateSeconds || 30; nextAt = Date.now() + per * 1000;
+      }
+      api('openQR', { session_id: sid, rotate: true }).then(function (d) {
+        modal('<div class="qrbox"><h2>' + esc(t('checkinTitle')) + '</h2><div id="qr"></div><div class="code" id="qr-code"></div>' +
+          '<div class="qr-timer"><span>' + esc(t('qrNext')) + '</span><b id="qr-left"></b><span class="qr-bar"><i id="qr-bar"></i></span></div>' +
+          '<div class="muted small">' + esc(t('qrRotating', { s: d.rotateSeconds || 30 })) + '</div>' +
+          '<div class="small muted" id="qr-url" style="word-break:break-all"></div><div class="actions"><button class="btn btn-ghost" data-act="closeqr">' + esc(t('close')) + '</button></div></div>');
+        qrSession = sid;
+        paint(d);
         qrTimer = setInterval(function () {
-          var s = Math.max(0, Math.round((d.expires - Date.now()) / 1000));
-          if (left) left.textContent = Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2);
-          if (!s) { clearInterval(qrTimer); qrTimer = null; }
-        }, 1000);
+          var left = document.getElementById('qr-left'), bar = document.getElementById('qr-bar');
+          if (!left) return;
+          var ms = Math.max(0, nextAt - Date.now());
+          left.textContent = Math.ceil(ms / 1000) + 's';
+          if (bar) bar.style.width = (ms / (per * 1000) * 100).toFixed(1) + '%';
+          if (ms <= 0 && !rotating) {
+            rotating = true;
+            api('openQR', { session_id: sid, rotate: true }).then(function (n) { rotating = false; paint(n); }, function () { rotating = false; nextAt = Date.now() + 5000; });
+          }
+        }, 250);
       }, errToast);
     },
     closemodal: function () { closeModal(); },
@@ -1021,6 +1180,7 @@
     var el = e.target.closest('[data-act]');
     if (!el || el.tagName === 'SELECT') {
       if (!e.target.closest('.usermenu')) { var m = document.getElementById('umenu'); if (m) m.classList.add('hidden'); }
+      if (!e.target.closest('.more-sheet') && !e.target.closest('.nav-more')) closeMore();
       return;
     }
     var fn = ACTIONS[el.dataset.act];

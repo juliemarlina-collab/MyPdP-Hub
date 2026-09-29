@@ -267,8 +267,10 @@ var MyPdPCore = (function () {
     need(p, ['code']);
     var code = clean(p.code, 12).toUpperCase();
     var s = db.all('Sessions').filter(function (x) { return x.qr_code && x.qr_code.toUpperCase() === code; })[0];
-    if (!s) fail('code', 'Check-in code not found.', 'Kod daftar masuk tidak dijumpai.');
-    if (Number(s.qr_expires) < db.now().getTime()) fail('expired', 'This check-in code has expired. Ask your lecturer.', 'Kod ini telah tamat tempoh. Rujuk pensyarah.');
+    var prevId = !s && db.kvGet ? db.kvGet('qrprev_' + code) : null;   // code that was replaced a few seconds ago
+    if (prevId) s = byKey(db.all('Sessions'), 'session_id')[prevId];
+    if (!s) fail('code', 'Check-in code not found or already changed. Scan the code on the lecturer\'s screen again.', 'Kod tidak dijumpai atau sudah bertukar. Imbas semula kod pada skrin pensyarah.');
+    if (!prevId && Number(s.qr_expires) < db.now().getTime()) fail('expired', 'This check-in code has expired. Ask your lecturer.', 'Kod ini telah tamat tempoh. Rujuk pensyarah.');
     if (enrolled(db, s.class_id).indexOf(user.user_id) < 0) fail('forbidden', 'You are not in this class.', 'Anda bukan pelajar kelas ini.');
     var existing = db.all('Attendance').filter(function (a) { return a.session_id === s.session_id && a.student_id === user.user_id; })[0];
     if (existing && (existing.status === 'P' || existing.status === 'L')) return { ok: true, already: true, session: s };
@@ -506,6 +508,57 @@ var MyPdPCore = (function () {
     return { ok: true };
   };
 
+  /** Summary + suggested actions for one student.
+   *  The facts are always worked out here from the records. If the backend adapter offers db.ai (Apps Script with an
+   *  AI_API_KEY script property), the facts, without the student's name or ID, are sent to the AI model, which writes
+   *  the summary and suggestions. Otherwise, or if the AI call fails, rule-based text is returned and marked source:'rules'. */
+  H.studentInsight = function (db, user, p) {
+    role(user, ['lecturer', 'admin']);
+    var c = ownClass(db, user, p.class_id);
+    if (enrolled(db, c.class_id).indexOf(p.student_id) < 0) fail('forbidden', 'Student not in this class.', 'Pelajar bukan dalam kelas ini.');
+    var cfg = settings(db), cache = cacheAll(db);
+    var sum = studentSummary(db, p.student_id, c, cfg, cache);
+    var a = sum.attendance, r = sum.risk;
+    var ints = db.all('Interventions').filter(function (x) { return x.student_id === p.student_id && x.class_id === c.class_id; })
+      .sort(function (x, y) { return x.date < y.date ? 1 : -1; });
+    var books = db.all('Bookings').filter(function (b) { return b.student_id === p.student_id && (b.class_id ? b.class_id === c.class_id : b.lecturer_id === c.lecturer_id); });
+    var graded = sum.tasks.filter(function (t) { return t.marks !== null && t.max_marks; }).map(function (t) { return { task: t.title, percent: Math.round(t.marks / t.max_marks * 100) }; });
+    var facts = {
+      course: c.course_code + ' ' + c.course_name, minimum_attendance: cfg.threshold,
+      attendance_percent: a.percent, sessions_counted: a.counted, absent: a.absent, excused: a.excused || 0,
+      missing_tasks: sum.tasks.filter(function (t) { return t.status === 'Missing'; }).map(function (t) { return t.title; }),
+      late_tasks: sum.tasks.filter(function (t) { return t.status === 'Late'; }).length,
+      marks_in_order: graded, average_mark: r.average, marks_dropping: r.dropping,
+      risk_level: r.level, interventions: ints.length, last_intervention: ints[0] ? ints[0].date + ' ' + ints[0].action : '',
+      consultations: books.length
+    };
+    var out = null;
+    if (db.ai) { try { out = db.ai(facts); } catch (e) { out = null; } }
+    if (out && out.summary && out.actions && out.actions.length) return { facts: facts, summary: out.summary, actions: out.actions.slice(0, 3), source: 'ai', model: out.model || '' };
+    return { facts: facts, summary: ruleSummary(facts), actions: ruleActions(facts), source: 'rules' };
+  };
+
+  function ruleSummary(f) {
+    var lvl = { red: ['needs high attention', 'memerlukan perhatian tinggi'], orange: ['needs intervention', 'memerlukan intervensi'], yellow: ['should be monitored', 'perlu dipantau'], green: ['is on track', 'berada di landasan'] }[f.risk_level] || ['', ''];
+    var en = 'This student ' + lvl[0] + '. Attendance is ' + f.attendance_percent + '% (' + f.absent + ' absent of ' + f.sessions_counted + ' sessions; minimum ' + f.minimum_attendance + '%).';
+    var ms = 'Pelajar ini ' + lvl[1] + '. Kehadiran ' + f.attendance_percent + '% (' + f.absent + ' tidak hadir daripada ' + f.sessions_counted + ' sesi; minimum ' + f.minimum_attendance + '%).';
+    if (f.missing_tasks.length) { en += ' ' + f.missing_tasks.length + ' task(s) not submitted: ' + f.missing_tasks.join(', ') + '.'; ms += ' ' + f.missing_tasks.length + ' tugasan belum dihantar: ' + f.missing_tasks.join(', ') + '.'; }
+    if (f.average_mark !== null) { en += ' Average mark ' + f.average_mark + '%' + (f.marks_dropping ? ', falling over the last three assessments.' : '.'); ms += ' Purata markah ' + f.average_mark + '%' + (f.marks_dropping ? ', menurun dalam tiga penilaian terakhir.' : '.'); }
+    en += f.interventions ? ' ' + f.interventions + ' follow-up(s) recorded, latest ' + f.last_intervention + '.' : ' No follow-up recorded yet.';
+    ms += f.interventions ? ' ' + f.interventions + ' tindakan susulan direkod, terkini ' + f.last_intervention + '.' : ' Belum ada tindakan susulan direkod.';
+    return { en: en, ms: ms };
+  }
+  function ruleActions(f) {
+    var out = [];
+    var low = f.sessions_counted > 0 && f.attendance_percent < f.minimum_attendance;
+    if (low) out.push({ en: 'Contact the student this week (WhatsApp or call) to find out why they are absent, and remind them of the ' + f.minimum_attendance + '% minimum.', ms: 'Hubungi pelajar minggu ini (WhatsApp atau panggilan) untuk kenal pasti punca tidak hadir, dan ingatkan had minimum ' + f.minimum_attendance + '%.' });
+    if (f.missing_tasks.length) out.push({ en: 'Agree a new deadline for ' + f.missing_tasks.join(', ') + ' and check progress after 3 days.', ms: 'Tetapkan tarikh akhir baharu untuk ' + f.missing_tasks.join(', ') + ' dan semak kemajuan selepas 3 hari.' });
+    if (f.marks_dropping || (f.average_mark !== null && f.average_mark < 50)) out.push({ en: 'Offer a consultation or remedial session on the latest topics.', ms: 'Tawarkan sesi konsultasi atau pemulihan bagi topik terkini.' });
+    if (!f.interventions && (f.risk_level === 'red' || f.risk_level === 'orange')) out.push({ en: 'Record the first follow-up in the student timeline so progress can be tracked.', ms: 'Rekod tindakan susulan pertama dalam garis masa pelajar supaya kemajuan boleh dijejak.' });
+    if (!out.length) out.push({ en: 'Keep monitoring and acknowledge the student\'s consistent effort.', ms: 'Teruskan pemantauan dan beri penghargaan atas usaha pelajar yang konsisten.' });
+    return out.slice(0, 3);
+  }
+
   H.classSessions = function (db, user, p) {
     role(user, ['lecturer', 'admin']);
     var c = ownClass(db, user, p.class_id);
@@ -529,16 +582,34 @@ var MyPdPCore = (function () {
     return { ok: true, session_id: id };
   };
 
+  // QR check-in. With rotate:true (used by the website) each code lives only QR_ROTATE + QR_GRACE seconds and the
+  // lecturer's screen asks for a fresh code every QR_ROTATE seconds, so a code shared on WhatsApp stops working almost at once.
+  // The code it replaces stays valid for QR_GRACE seconds so a student who scanned just before the change is not refused.
+  var QR_ROTATE = 30, QR_GRACE = 20;
   H.openQR = function (db, user, p) {
     role(user, ['lecturer', 'admin']);
     var s = byKey(db.all('Sessions'), 'session_id')[p.session_id];
     if (!s) fail('missing', 'Session not found.', 'Sesi tidak dijumpai.');
     ownClass(db, user, s.class_id);
+    var rotate = p.rotate === true || String(p.rotate) === 'true';
     var mins = num(p.minutes) || settings(db).qrMinutes;
+    var nowMs = db.now().getTime();
+    var old = s.qr_code && Number(s.qr_expires) > nowMs ? String(s.qr_code).toUpperCase() : '';
     var code = db.randomCode(6);
-    var exp = db.now().getTime() + mins * 60000;
+    var exp = nowMs + (rotate ? (QR_ROTATE + QR_GRACE) * 1000 : mins * 60000);
     db.update('Sessions', function (x) { return x.session_id === s.session_id; }, { qr_code: code, qr_expires: String(exp) });
-    return { code: code, expires: exp, minutes: mins };
+    if (rotate && old && db.kvSet) db.kvSet('qrprev_' + old, s.session_id, QR_GRACE);
+    return { code: code, expires: exp, minutes: rotate ? 0 : mins, rotate: rotate, rotateSeconds: QR_ROTATE };
+  };
+
+  /** Close the QR window straight away (lecturer closes the QR screen). */
+  H.closeQR = function (db, user, p) {
+    role(user, ['lecturer', 'admin']);
+    var s = byKey(db.all('Sessions'), 'session_id')[p.session_id];
+    if (!s) fail('missing', 'Session not found.', 'Sesi tidak dijumpai.');
+    ownClass(db, user, s.class_id);
+    db.update('Sessions', function (x) { return x.session_id === s.session_id; }, { qr_expires: String(db.now().getTime() + QR_GRACE * 1000) });
+    return { ok: true };
   };
 
   H.sessionRoster = function (db, user, p) {
