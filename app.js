@@ -950,7 +950,12 @@
   };
 
   // ================= ABOUT (public + signed in) =================
-  var TEAM = ['Dina Izzaty binti Moohyiddin', 'Hairulamri bin Kasim', 'Ho Swee Chin', 'Julie Marlina binti Hasan', 'Khairul Nazry bin Talib'];
+  var TEAM = [
+    { n: 'Dina Izzaty binti Moohyiddin', img: 'images/team/dina.jpg', ms: 'Pengalaman pengguna & kandungan', en: 'User experience & content' },
+    { n: 'Hairulamri bin Kasim', img: 'images/team/hairulamri.jpg', ms: 'Seni bina & aliran sistem', en: 'Architecture & system flow' },
+    { n: 'Ho Swee Chin', img: 'images/team/sweechin.jpg', ms: 'Idea kehadiran & tuntutan MC', en: 'Attendance & MC claim ideas' },
+    { n: 'Julie Marlina binti Hasan', img: 'images/team/julie.jpg', ms: 'Ketua kumpulan: penyelarasan, AI & demo', en: 'Team lead: coordination, AI & demo' },
+    { n: 'Khairul Nazry bin Talib', img: 'images/team/nazry.jpg', ms: 'Analisis risiko & impak PdP', en: 'Risk analysis & impact on T&L' }];
   function aboutView(pub) {
     var li = function (keys) { return '<ul class="checks">' + keys.map(function (k) { return '<li>' + ic('check') + '<span>' + esc(t(k)) + '</span></li>'; }).join('') + '</ul>'; };
     return (pub ? '<div class="about-top"><a class="logo" href="#/login"><span class="logo-mark">PdP</span><span>MyPdP Insight</span></a>' + langToggle() + '</div>' : '') +
@@ -962,7 +967,7 @@
       '<section class="card about-ai"><h2>' + ic('ai') + ' ' + esc(t('aboutAiTitle')) + '</h2><div class="grid g2"><div><h3>' + esc(t('aboutAiBuild')) + '</h3>' + li(['aboutAi1', 'aboutAi2', 'aboutAi3', 'aboutAi4']) + '</div>' +
       '<div><h3>' + esc(t('aboutAiProduct')) + '</h3>' + li(['aboutAi5', 'aboutAi6']) + '</div></div><p class="small muted">' + esc(t('aboutAiTool')) + '</p></section>' +
       '<section class="card"><h2>' + ic('users') + ' ' + esc(t('aboutTeam')) + '</h2><div class="team-grid">' + TEAM.map(function (n) {
-        return '<div class="team-member">' + avatar(n, 'lecturer') + '<strong>' + esc(n) + '</strong></div>';
+        return '<div class="team-member"><span class="team-photo">' + avatar(n.n, 'lecturer') + '<img src="' + esc(n.img) + '" alt="' + esc(n.n) + '" loading="lazy" onerror="this.remove()"></span><strong>' + esc(n.n) + '</strong><small>' + esc(lang === 'ms' ? n.ms : n.en) + '</small></div>';
       }).join('') + '</div></section></div>';
   }
   [S_PAGES, L_PAGES, A_PAGES].forEach(function (P) { P.about = function () { return Promise.resolve(aboutView(false)); }; });
