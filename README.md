@@ -4,12 +4,12 @@ This is a student tracking and monitoring website for students and lecturers. It
 
 | Part | Where it lives | File(s) |
 |---|---|---|
-| Website (what users see) | GitHub Pages | `frontend/` folder |
-| Backend (the logic) | Google Apps Script | `backend/Code.gs`, `backend/Core.js`, `backend/appsscript.json` |
-| Database | Google Sheet (14 tabs) | `backend/MyPdP_Insight_Database.xlsx` (a copy is already in the CPCM Drive folder as a Google Sheet) |
+| Website (what users see) | GitHub Pages | repo root (`index.html` + 7 files) |
+| Backend (the logic) | Google Apps Script | `apps-script/Code.gs`, `apps-script/Core.gs`, `apps-script/appsscript.json` |
+| Database | Google Sheet (14 tabs) | `apps-script/MyPdP_Insight_Database.xlsx` (a copy is already in the CPCM Drive folder as a Google Sheet) |
 | MC & assignment files | Private Google Drive folder | Created automatically by `setup()` |
 
-**Try it first (no setup):** open `frontend/index.html`. With `API_URL` empty, the site runs in **demo mode** with made-up data. Lecturer: `L001`. Students: `S003`, `S005`, `S007`. **PIN: 1234** for all.
+**Try it first (no setup):** open `index.html`. With `API_URL` empty, the site runs in **demo mode** with made-up data. Lecturer: `L001`. Students: `S003`, `S005`, `S007`. **PIN: 1234** for all.
 
 ---
 
@@ -45,15 +45,15 @@ This is a student tracking and monitoring website for students and lecturers. It
 
 ### Step 1 – The Google Sheet (database)
 1. Open **MyPdP Insight – Database** in the CPCM Drive folder. It is an empty Google Sheet, and `setup()` in Step 2 creates all 14 tabs for you.
-2. **Optional: load the sample data for testing.** In the Sheet, go to **File > Import > Upload** and choose `backend/MyPdP_Insight_Database.xlsx`, then pick **Replace spreadsheet**. This gives you 2 lecturers, 12 students, 3 classes and 7 weeks of records. All PINs are 1234.
+2. **Optional: load the sample data for testing.** In the Sheet, go to **File > Import > Upload** and choose `apps-script/MyPdP_Insight_Database.xlsx`, then pick **Replace spreadsheet**. This gives you 2 lecturers, 12 students, 3 classes and 7 weeks of records. All PINs are 1234.
 3. Keep all tab names and header rows exactly as they are.
 
 ### Step 2 – Apps Script (backend)
 1. In the Sheet, go to **Extensions > Apps Script**.
 2. Delete the sample code, then create three files:
-   - `Code.gs`: paste the contents of `backend/Code.gs`.
-   - `Core.gs` (click **+ > Script**, name it `Core`): paste the contents of `backend/Core.js`.
-   - `appsscript.json`: go to **Project Settings ⚙**, tick *Show "appsscript.json"*, then paste the contents of `backend/appsscript.json`. This sets the time zone to Asia/Kuala_Lumpur.
+   - `Code.gs`: paste the contents of `apps-script/Code.gs`.
+   - `Core.gs` (click **+ > Script**, name it `Core`): paste the contents of `apps-script/Core.gs`.
+   - `appsscript.json`: go to **Project Settings ⚙**, tick *Show "appsscript.json"*, then paste the contents of `apps-script/appsscript.json`. This sets the time zone to Asia/Kuala_Lumpur.
 3. Save. Select the function **`setup`** and click **Run**, then allow the permissions.
    - This creates any missing tabs and a first admin login (**A001 / PIN 1234**, change it after you log in).
    - It also creates the private upload folder in your Drive and turns the PINs into secure hashes.
@@ -66,7 +66,7 @@ This is a student tracking and monitoring website for students and lecturers. It
 
 ### Step 3 – GitHub Pages (website)
 1. Create a new repository, e.g. `mypdp-insight`.
-2. Upload everything **inside** `frontend/`.
+2. Upload **everything in this zip** (keep the `apps-script` folder too – it is only for reference and is not used by the website).
 3. Edit `config.js` and paste the Web app URL:
    ```js
    API_URL: 'https://script.google.com/macros/s/XXXX/exec',
@@ -104,10 +104,10 @@ After changing `Code.gs` or `Core.gs`, go to **Deploy > Manage deployments > Edi
 
 ## Files
 ```
-frontend/   index.html, style.css, app.js (screens), i18n.js (all BM/EN text – edit words here),
-            config.js (API URL), core.js (same logic as backend, used in demo mode), demo-db.js, seed.js
-backend/    Code.gs, Core.js (→ paste as Core.gs), appsscript.json, MyPdP_Insight_Database.xlsx
-tools/      test scripts & sample-data generator (for developers)
+index.html, style.css, app.js, i18n.js (all BM/EN text – edit words here),
+config.js (paste your API URL here), core.js, demo-db.js, seed.js (demo data), .nojekyll
+apps-script/   Code.gs, Core.gs, appsscript.json  → paste into Google Apps Script
+               MyPdP_Insight_Database.xlsx       → optional sample data for the Sheet
 ```
 
 ## Ideas for Version 2
