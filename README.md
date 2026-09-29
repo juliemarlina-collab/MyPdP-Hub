@@ -1,114 +1,104 @@
-# MyPdP Insight – Version 1 Prototype (Option B)
+# MyPdP Insight – Release 1.1 (Option B)
 
-This is a student tracking and monitoring website for students and lecturers. It is **bilingual (BM / EN)**.
+Student tracking and monitoring for students and lecturers, with a BM/EN switch.
+The website runs on GitHub Pages, the backend on Google Apps Script, and the data lives in a Google Sheet plus a private Drive folder.
 
-| Part | Where it lives | File(s) |
+## What's in this zip
+
+| Folder | What it is | Where it goes |
 |---|---|---|
-| Website (what users see) | GitHub Pages | repo root (`index.html` + 7 files) |
-| Backend (the logic) | Google Apps Script | `apps-script/Code.gs`, `apps-script/Core.gs`, `apps-script/appsscript.json` |
-| Database | Google Sheet (14 tabs) | `apps-script/MyPdP_Insight_Database.xlsx` (a copy is already in the CPCM Drive folder as a Google Sheet) |
-| MC & assignment files | Private Google Drive folder | Created automatically by `setup()` |
+| `github-pages/` | The website: 8 files, `.nojekyll` and the **`images/` folder** (empty picture slots) | Upload **only the contents of this folder** to your GitHub repo |
+| `apps-script/` | `Code.gs`, `Core.gs`, `appsscript.json` | Paste into the Google Sheet (**Extensions > Apps Script**) |
+| `private-data/` | `MyPdP_Import_Template.xlsx` for class lists, and `MyPdP_Insight_KTCM_Demo_Data_v3.xlsx` (fictional, for testing) | Keep on Google Drive. **Never upload to GitHub** |
 
-**Try it first (no setup):** open `index.html`. With `API_URL` empty, the site runs in **demo mode** with made-up data. Lecturer: `L001`. Students: `S003`, `S005`, `S007`. **PIN: 1234** for all.
-
----
-
-## What Version 1 does
-
-**Students**
-- Dashboard: attendance %, risk status, tasks due, latest marks
-- Check in to class by scanning the lecturer's QR code, or typing the 6-character code
-- Attendance record, with the calculation shown
-- **MC / absence claim**: upload a PDF, JPG or PNG and track its status
-- Tasks: submit a link or file, then see marks and feedback
-- Consultation: book a lecturer's free slot and see its status
-- Notifications
-
-**Lecturers**
-- Dashboard: class attendance %, submission rate, average mark, students needing attention, pending claims, work to grade
-- Classes & students: risk list (🔴🟠🟡🟢) and a **timeline** for each student
-- Take attendance: create a session, show a QR code, or mark P / L / A / E manually
-- Review claims: **approving a claim automatically changes the attendance to "Absent with reason" (E)**, and the change is logged
-- Tasks & marking: create a task (all students are notified), open submissions, give marks and feedback
-- Consultation: add slots (clashes are blocked), then confirm, reject or complete requests. **A completed consultation is saved automatically in the student's follow-up log.**
-- Reports: CSV downloads of attendance, task status & marks, and the PdP monitoring report
-
-**Risk rules** (change the numbers in the *Settings* tab):
-- 🔴 High Attention: attendance below the minimum **and** at least one missing task
-- 🟠 Intervention Needed: attendance below the minimum, **or** 2 or more missing tasks, **or** marks dropped twice in a row
-- 🟡 Monitor: 1 missing task, **or** attendance within 5% above the minimum
-- 🟢 On Track: none of the above
+The website on GitHub contains **no real data**. Student lists, marks and MC files stay in the restricted Sheet and Drive folder.
+`seed.js` holds fictional demo data only. Once `API_URL` is set, it is not used, and you can delete it.
 
 ---
 
-## Setup (about 30 minutes, one person)
+## Changes in release 1.1 (from the code review)
 
-### Step 1 – The Google Sheet (database)
-1. Open **MyPdP Insight – Database** in the CPCM Drive folder. It is an empty Google Sheet, and `setup()` in Step 2 creates all 14 tabs for you.
-2. **Optional: load the sample data for testing.** In the Sheet, go to **File > Import > Upload** and choose `apps-script/MyPdP_Insight_Database.xlsx`, then pick **Replace spreadsheet**. This gives you 2 lecturers, 12 students, 3 classes and 7 weeks of records. All PINs are 1234.
-3. Keep all tab names and header rows exactly as they are.
+**Pilot safeguards**
 
-### Step 2 – Apps Script (backend)
-1. In the Sheet, go to **Extensions > Apps Script**.
-2. Delete the sample code, then create three files:
-   - `Code.gs`: paste the contents of `apps-script/Code.gs`.
-   - `Core.gs` (click **+ > Script**, name it `Core`): paste the contents of `apps-script/Core.gs`.
-   - `appsscript.json`: go to **Project Settings ⚙**, tick *Show "appsscript.json"*, then paste the contents of `apps-script/appsscript.json`. This sets the time zone to Asia/Kuala_Lumpur.
-3. Save. Select the function **`setup`** and click **Run**, then allow the permissions.
-   - This creates any missing tabs and a first admin login (**A001 / PIN 1234**, change it after you log in).
-   - It also creates the private upload folder in your Drive and turns the PINs into secure hashes.
-   - Reload the Sheet. A new **MyPdP Insight** menu appears.
-4. Go to **Deploy > New deployment > Web app**.
-   - *Execute as*: **Me**
-   - *Who has access*: **Anyone**
-   - Click **Deploy** and copy the **Web app URL** (it ends in `/exec`).
-   - Open that URL in a browser. You should see `{"ok":true,"app":"MyPdP Insight API"...}`.
+- **Login throttling:** after 5 wrong PINs, that ID is locked for 15 minutes.
+- **Individual first-login PINs:** menu **MyPdP Insight > Issue individual first-login PINs** gives every new user a random 6-digit PIN. The PINs are listed once in a `PIN_Handout` tab. Hand them out privately, then delete the tab.
+- **PIN change at first login:** users with `must_change_pin = TRUE` can do nothing until they set their own 6–8 digit PIN. Easy PINs such as `123456` or `111111` are refused.
+- **QR can't overwrite an approved absence:** a QR check-in can no longer change **E** (Absent with reason) to Present.
+- **Documented corrections:** a lecturer changing an **E** must type a reason. It is saved in AuditLog as `attendance_correction`.
+- **Follow-up log check:** `addIntervention` now confirms that the student is enrolled in the selected class.
 
-### Step 3 – GitHub Pages (website)
-1. Create a new repository, e.g. `mypdp-insight`.
-2. Upload **everything in this zip** (keep the `apps-script` folder too – it is only for reference and is not used by the website).
-3. Edit `config.js` and paste the Web app URL:
-   ```js
-   API_URL: 'https://script.google.com/macros/s/XXXX/exec',
-   ```
-4. Go to **Settings > Pages > Deploy from branch > main / root**. Your site will be at `https://<username>.github.io/mypdp-insight/`.
+**Workspace and data quality**
 
-### Step 4 – Real users (before the pilot)
-1. In the Sheet, delete the sample rows (**keep row 1**) in every tab **except Settings**.
-2. **Users**: add one row per person.
-   - `role` = student, lecturer or admin; `active` = TRUE.
-   - Type a 4–8 digit PIN in `pin_hash`, then run **MyPdP Insight > Convert new PINs**.
-   - Users can change their own PIN after logging in.
-3. **Classes**: add each class, with `lecturer_id` set to the lecturer's `user_id`.
-4. **Enrolments**: add one row for each student in each class. You can paste in a list from Excel.
-5. **Settings**: check `attendance_threshold` (institution policy) and the other rules.
-6. Share the **Uploads (PRIVATE)** folder with the lecturers only, as Viewer. Students can never open other people's MCs.
+- **My Courses:** lecturers now see **Semester → Course → Class**. Each course has a cover thumbnail with its code, and each class shows students, attendance and the number at risk.
+- **Consultations:** students choose which class a consultation is about. That `class_id` is saved on the booking and used when the session is logged as a follow-up.
+- **Assessment order:** new `Tasks.seq` column. "Marks dropping" follows this order, not the due date. New tasks get the next number automatically.
+- **Risk evidence:** each alert shows why. For example:
+  - "Attendance 62.5% (3 absent of 8 sessions; minimum 80%)"
+  - "1 missing: Task 2: Proposal draft"
+  - "Marks dropping: Task 1 85% → Task 2 70% → Task 3 58%"
+- **Visuals:** text-free illustrations on the check-in, claims, tasks, consultation and reports pages, so no English is left inside a BM page. There are no large photos on data pages.
+- **Optional welcome photo:** set `HERO_PHOTO: 'hero.jpg'` in `config.js` and upload your own photo next to `index.html`. Use a photo with no text in it, and get consent from the people shown.
+
+**Picture slots (new):** `github-pages/images/` is ready for header and illustration pictures. Drop in files with the exact names listed in `images/README-IMAGES.md`, which also has sizes and ready-made prompts, and they appear automatically. Any missing picture keeps the built-in design. The slots are:
+- the login header (`hero.png`),
+- the lecturer and student dashboard banners,
+- one My Courses tile per field: Bahasa & Komunikasi, Pengajian Am, Matematik & Sains, Kejuruteraan Mekanikal, Agroteknologi & Bio-Industri, plus one for any other field,
+- illustrations for Check-in, Claims, Tasks, Consultation and Reports.
+
+**Existing Sheets upgrade automatically.** Run `setup` once after pasting the new code, and it adds the new columns (`must_change_pin`, `seq`, `class_id`) without touching your data.
+
+---
+
+## Setup (about 30 minutes)
+
+### 1. Google Sheet + Apps Script
+1. Create a **new, empty** Google Sheet named "MyPdP Insight – Database". Use a separate copy for testing with the demo data.
+2. Go to **Extensions > Apps Script** and create `Code.gs` and `Core.gs` from the `apps-script/` folder. Go to **Project Settings**, tick *Show "appsscript.json"* and paste in that file too.
+3. Run **`setup`** once and allow the permissions. It:
+   - creates the 14 tabs,
+   - creates the private upload folder,
+   - creates the first admin, **A001 / PIN 1234**, who must change it at first login.
+4. Go to **Deploy > New deployment > Web app**, with *Execute as*: **Me** and *Who has access*: **Anyone**. Copy the `/exec` URL.
+
+### 2. Website (GitHub Pages)
+1. Upload the contents of `github-pages/` to a new repo.
+2. In `config.js`, set `API_URL: 'https://script.google.com/macros/s/…/exec'`.
+3. Go to **Settings > Pages > Deploy from branch > main / (root)**.
+
+### 3. Importing each lecturer's Excel class list
+1. Each lecturer fills in **`MyPdP_Import_Template.xlsx`**. It has three tabs:
+   - **Users:** one row per person.
+   - **Classes:** one row per class group, with the lecturer's `lecturer_id`.
+   - **Enrolments:** one row per student per class. A student in two courses has one Users row and two Enrolments rows.
+2. Paste each tab, values only, under row 1 of the matching tab in the Sheet. Leave `pin_hash` empty.
+3. Run **MyPdP Insight > Validate imported class lists**. The `Validation` tab lists problems with row numbers and how to fix each one, for example:
+   - duplicate IDs, missing names or unknown lecturers,
+   - course codes that don't look like `DUE50132`,
+   - mixed semester spellings, duplicate or broken enrolments,
+   - students with no class.
+4. When the Validation tab shows no problems, run **MyPdP Insight > Issue individual first-login PINs**.
 
 ### Updating the code later
-After changing `Code.gs` or `Core.gs`, go to **Deploy > Manage deployments > Edit ✏ > Version: New version > Deploy**. The URL stays the same.
+Go to **Deploy > Manage deployments > Edit > Version: New version > Deploy**. The URL stays the same.
 
 ---
 
-## Data protection (PDPA) – please read
-- Do **not** put real student data or MC files in the GitHub repository. GitHub holds the website only. All data stays in your Google Sheet and Drive.
-- MC files go into a Drive folder that only you and the lecturers you share it with can open.
-- Every change to attendance, every claim decision and every grade is recorded in the **AuditLog** tab.
-- Set a retention period for MC files that follows your institution's policy, and delete old files at the end of each semester.
-- A PIN login is fine for a pilot. For full rollout, consider Google sign-in with institution accounts.
+## Data protection (PDPA)
+- The GitHub repo is public and holds code only. Real data never goes there.
+- MC files are stored in a Drive folder shared only with lecturers, as Viewer. Set a retention period that follows institution policy.
+- AuditLog records every attendance change, correction, claim decision, grade and PIN change.
+- For full rollout after the pilot, consider Google sign-in with institution accounts instead of PINs.
 
-## Known limits of Option B (fine for a pilot)
-- Speed: each click takes about 1–3 seconds, because Apps Script reads the Sheet. This works well for a few classes (hundreds of students). For a whole polytechnic, move to a real database (Option A).
-- Login sessions last up to 6 hours, then users log in again.
-- Notifications appear inside the website only. Email reminders can be added later with `MailApp`.
-- Admin work (users, classes, enrolments, settings) is done directly in the Sheet.
+## Known limits (fine for a pilot)
+- Each action takes about 1–3 seconds, because Apps Script reads the Sheet. This works for a few classes and hundreds of students.
+- Login sessions last up to 6 hours.
+- Notifications appear inside the website only.
+- Admin work (users, classes, settings) is done in the Sheet.
+- A separate `Courses` table is not needed yet, because each class row already carries its course code and name. Add one when several lecturers share and edit the same course details.
 
-## Files
-```
-index.html, style.css, app.js, i18n.js (all BM/EN text – edit words here),
-config.js (paste your API URL here), core.js, demo-db.js, seed.js (demo data), .nojekyll
-apps-script/   Code.gs, Core.gs, appsscript.json  → paste into Google Apps Script
-               MyPdP_Insight_Database.xlsx       → optional sample data for the Sheet
-```
-
-## Ideas for Version 2
-Exit tickets and an "I'm lost" button → topic mastery heatmap · CLO tracker · email and WhatsApp reminders · class comparison · auto remedial links · admin pages inside the website.
+## Demo logins (demo mode only, PIN 1234)
+- L004: lecturer
+- L002: has a pending claim to review
+- S003: an at-risk student
+- S005: a student in 3 courses
+- S051: a student with a pending claim
