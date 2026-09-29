@@ -259,6 +259,11 @@
       '<button data-act="lang" data-v="ms" aria-pressed="' + (lang === 'ms') + '">BM</button><button data-act="lang" data-v="en" aria-pressed="' + (lang === 'en') + '">EN</button></div>';
   }
 
+  function siteFooter() {
+    return '<footer class="site-footer"><div class="footer-brand"><span class="footer-mark">PdP</span><span><strong>MyPdP Insight</strong><small>' + esc(t('footerTag')) + '</small></span></div>' +
+      '<div class="footer-meta"><span>' + esc(CFG.INSTITUTION || 'MyPdP Insight') + '</span><span>© ' + new Date().getFullYear() + ' MyPdP Insight</span><span>' + esc(t(LIVE ? 'footerLive' : 'footerDemo')) + '</span></div></footer>';
+  }
+
   function shell(active, content) {
     var nav = S.user.role === 'admin' ? NAV_A : (isLect() ? NAV_L : NAV_S);
     var cur = nav.filter(function (n) { return n[0] === active; })[0] || nav[0];
@@ -278,7 +283,7 @@
       '<div class="dropdown hidden" id="umenu"><div class="small muted" style="padding:6px 10px">' + esc(S.user.user_id) + ' · ' + esc(t(S.user.role)) + '</div>' +
       '<button data-act="changepin">' + ic('key') + esc(t('changePin')) + '</button>' + (LIVE ? '' : '<button data-act="demoreset">' + ic('reset') + esc(t('demoReset')) + '</button>') +
       '<button data-act="logout">' + ic('logout') + esc(t('logout')) + '</button></div></div></div>' +
-      '<div class="anim" id="page">' + content + '</div></main></div>';
+      '<div class="anim" id="page">' + content + '</div>' + siteFooter() + '</main></div>';
   }
 
   var renderSeq = 0;
@@ -304,7 +309,7 @@
       return page(r);
     })
       .then(function (html) { if (seq !== renderSeq) return; app.innerHTML = shell(activeName, html); animateIn(document.getElementById('main')); applyBackgrounds(app); var f = pageAfter; pageAfter = null; if (f) f(); window.scrollTo(0, 0); })
-      .catch(function (e) { if (seq !== renderSeq) return; if (e && e.code === 'pinchange') { S.user.must_change_pin = true; app.innerHTML = pinSetupView(); return; } var m = document.getElementById('main'); if (m) m.innerHTML = '<div class="alert alert-red">' + esc(msg(e) || String(e)) + '</div>'; });
+      .catch(function (e) { if (seq !== renderSeq) return; if (e && e.code === 'pinchange') { S.user.must_change_pin = true; app.innerHTML = pinSetupView(); return; } var m = document.getElementById('main'); if (m) m.innerHTML = '<div class="alert alert-red">' + esc(msg(e) || String(e)) + '</div>' + siteFooter(); });
   }
   var pageAfter = null; // optional callback after a page is painted
 
@@ -393,13 +398,13 @@
       '<form data-form="login" autocomplete="on"><label for="uid">' + esc(t('userId')) + '</label><input id="uid" name="user_id" type="text" autocapitalize="characters" required placeholder="' + (portalChoice === 'student' ? 'S001' : portalChoice === 'lecturer' ? 'L001' : 'A001') + '">' +
       '<div class="small muted" style="margin-top:4px">' + esc(t(portalChoice + 'LoginHint')) + '</div>' +
       '<label for="pin">' + esc(t('pin')) + '</label><input id="pin" name="pin" type="password" inputmode="numeric" required>' +
-      '<div class="actions"><button class="btn btn-primary" type="submit" style="width:100%">' + esc(t('login')) + arw() + '</button></div></form></div>' + demo + '</div>' +
+      '<div class="actions"><button class="btn btn-primary" type="submit" style="width:100%">' + esc(t('login')) + arw() + '</button></div></form></div></div>' +
       '<div class="bento anim">' +
       '<div class="tile t-brand"><span class="go">' + ic('qr') + '</span><div class="big">' + cnt(10) + '<span style="font-size:1rem"> ' + (ms ? 'saat' : 'sec') + '</span></div><div class="lbl">' + esc(t('b1')) + '</div></div>' +
       '<div class="tile t-lime"><span class="go">' + ic('med') + '</span><div class="big">' + cnt(0) + '</div><div class="lbl">' + esc(t('b2')) + '</div></div>' +
       '<div class="tile t-white"><span class="go">' + ic('alert') + '</span><div class="big">' + cnt(4) + '</div><div class="lbl">' + esc(t('b3')) + '</div></div>' +
       '<div class="tile t-night"><span class="go">' + ic('download') + '</span><div class="big">' + cnt(1) + '<span style="font-size:1rem"> ' + (ms ? 'klik' : 'click') + '</span></div><div class="lbl">' + esc(t('b4')) + '</div></div>' +
-      '</div></div><p class="small muted" style="text-align:center;margin-top:26px">' + esc(CFG.INSTITUTION || '') + ' · MyPdP Insight</p></div>';
+      '</div></div>' + demo + siteFooter() + '</div>';
   }
 
   function pinSetupView() {
@@ -408,7 +413,7 @@
       '<form data-form="pinsetup"><label for="ps-o">' + esc(t('oldPin')) + '</label><input id="ps-o" name="old_pin" type="password" inputmode="numeric" autocomplete="current-password" required>' +
       '<label for="ps-n">' + esc(t('newPin')) + '</label><input id="ps-n" name="new_pin" type="password" inputmode="numeric" pattern="\\d{6,8}" autocomplete="new-password" required>' +
       '<label for="ps-c">' + esc(t('confirmPin')) + '</label><input id="ps-c" name="confirm_pin" type="password" inputmode="numeric" autocomplete="new-password" required>' +
-      '<div class="actions"><button class="btn btn-primary" type="submit">' + esc(t('save')) + arw() + '</button><button class="btn btn-ghost" type="button" data-act="logout">' + esc(t('logout')) + '</button></div></form></div></div>';
+      '<div class="actions"><button class="btn btn-primary" type="submit">' + esc(t('save')) + arw() + '</button><button class="btn btn-ghost" type="button" data-act="logout">' + esc(t('logout')) + '</button></div></form></div>' + siteFooter() + '</div>';
   }
   function doLogin(id, pin) {
     return api('login', { user_id: id, pin: pin }).then(function (d) { setSession(d.token, d.user); go('#/dashboard'); })

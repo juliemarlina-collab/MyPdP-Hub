@@ -1,5 +1,8 @@
 # MyPdP Insight – Demo UI update
 
+## Presentation layout update (1.1.2)
+The demo account samples now span the full page width below the login and feature tiles, with three horizontal account cards on desktop. All page canvases use white; the coloured navigation and animated welcome hero remain intact. The welcome page, signed-in screens and PIN setup page share a bilingual footer. To publish this build, upload the files in this ZIP to the root of the GitHub Pages repository and replace matching files. Keep the `images/` and `apps-script/` folders in their existing locations. `API_URL` remains empty, so the fictional demo works without deploying Apps Script.
+
 Student tracking and monitoring for students and lecturers, with a BM/EN switch.
 
 ## Demo entry

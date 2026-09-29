@@ -2,6 +2,7 @@
    To change a word on screen, edit it here. Keep the key (left side) the same. */
 window.MYPDP_I18N = {
   ms: {
+    footerTag: 'Pantau PdP. Bertindak awal.', footerDemo: 'Mod demo · data rekaan', footerLive: 'Portal pembelajaran',
     choosePortal: 'Pilih portal anda', enterPortal: 'Teruskan', adminPortal: 'PORTAL PENTADBIR',
     studentPortalDesc: 'Semak kehadiran, tugasan, markah dan bantuan pensyarah.', lecturerPortalDesc: 'Urus kelas sendiri, semak tuntutan dan bantu pelajar.', adminPortalDesc: 'Pantau kelas institusi, laporan dan persediaan sistem.',
     studentLoginHint: 'Gunakan nombor matrik anda.', lecturerLoginHint: 'Gunakan ID staf pensyarah anda.', adminLoginHint: 'Gunakan ID pentadbir anda.',
@@ -98,6 +99,7 @@ window.MYPDP_I18N = {
     yourClasses: 'Kelas anda', recentMarks: 'Markah terkini', upcomingConsult: 'Temujanji akan datang', claimsPending: 'tuntutan menunggu semakan'
   },
   en: {
+    footerTag: 'Track learning. Act early.', footerDemo: 'Demo mode · fictional data', footerLive: 'Learning portal',
     choosePortal: 'Choose your portal', enterPortal: 'Continue', adminPortal: 'ADMIN PORTAL',
     studentPortalDesc: 'Check attendance, tasks, marks and lecturer support.', lecturerPortalDesc: 'Manage your classes, review claims and support students.', adminPortalDesc: 'Oversee institution classes, reports and system setup.',
     studentLoginHint: 'Use your student ID.', lecturerLoginHint: 'Use your lecturer staff ID.', adminLoginHint: 'Use your administrator ID.',
